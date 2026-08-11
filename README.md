@@ -13,4 +13,6 @@ Mobile-first, static portfolio-research dashboard for the three specified ATRAM 
 
 GitHub Actions runs daily at 01:17 UTC, after each push, or manually. It validates the sources and all local model guardrails then redeploys GitHub Pages. It does not silently change economic assumptions: a human must update `data/portfolio.json` only after reviewing new primary-source disclosures.
 
-The Page URL will be `https://f1fad-hue.github.io/GPTAtram/` after GitHub Pages is enabled and the first workflow completes.
+The dashboard is immediately usable at `https://cdn.jsdelivr.net/gh/f1fad-hue/GPTAtram@main/index.html`.
+
+For the first-party GitHub Pages URL, enable **Settings → Pages → Build and deployment → GitHub Actions** once. The next daily workflow run will then deploy `https://f1fad-hue.github.io/GPTAtram/` automatically.
