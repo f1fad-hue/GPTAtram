@@ -39,11 +39,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: 22}
-      - run: npm run validate
-      - name: Static source and build sanity check
+      - name: Validate data constraints and drawdown guardrails
+        run: npm run validate
+      - name: Audit authoritative sources and factual-claim coverage
+        run: AUDIT_REPORT_PATH=reports/daily-authoritative-audit.md npm run audit
+      - name: Run code, math and static-site sanity checks
         run: |
+          node --check app.js
+          node --check scripts/validate-data.mjs
+          node --check scripts/authoritative-audit.mjs
+          git diff --check
           test -f index.html && test -f app.js && test -f styles.css
           grep -q 'Monte Carlo' index.html
+          grep -q 'Policy, real yields & liquidity' data/portfolio.json
+      - name: Publish the daily audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-authoritative-audit
+          path: reports/daily-authoritative-audit.md
+          if-no-files-found: warn
+          retention-days: 90
   deploy:
     needs: [pages-status, verify]
     if: needs.pages-status.outputs.enabled == 'true'

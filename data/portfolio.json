@@ -2,12 +2,11 @@
   "asOf": "2026-08-11",
   "portfolio": {"rate": 4.42, "rateBand": "4.00–4.99", "drawdownCap": 25, "netCagrForecast": 9.2, "volatility": 0.19, "allocation": [{"id":"money","name":"ATRAM Peso Money Market", "weight":20, "color":"#b9f64c"},{"id":"tech","name":"ATRAM Global Technology Feeder", "weight":45, "color":"#47d8e8"},{"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder", "weight":35, "color":"#ffad4d"}]},
   "drivers": [
-    {"name":"Real yields & USD liquidity", "values":[4.2,4.0,3.8], "relevance":"Tech valuation / PHP liquidity"},
+    {"name":"Policy, real yields & liquidity", "values":[4.0,3.9,3.7], "relevance":"Fed 70% / BSP 30%; valuation, PHP carry & liquidity"},
     {"name":"Technology earnings & AI capex", "values":[4.6,4.4,4.2], "relevance":"Global Technology growth engine"},
     {"name":"Nasdaq valuation dispersion", "values":[3.3,3.1,3.0], "relevance":"Equity drawdown & entry risk"},
     {"name":"Option-implied volatility", "values":[4.1,3.8,3.6], "relevance":"Income ETF premium opportunity"},
-    {"name":"USD/PHP direction", "values":[3.9,3.8,3.7], "relevance":"Unhedged PHP feeder FX exposure"},
-    {"name":"Inflation & policy path", "values":[3.8,3.7,3.6], "relevance":"Money-market carry / duration"}
+    {"name":"USD/PHP direction", "values":[3.9,3.8,3.7], "relevance":"Unhedged PHP feeder FX exposure"}
   ],
   "scenarios": [
     {"rate":"3.00–3.99", "label":"Cautious", "cap":20, "dd":18.6, "allocation":[45,30,25]},

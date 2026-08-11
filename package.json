@@ -1,1 +1,1 @@
-{"name":"atram-growth-compass","private":true,"type":"module","scripts":{"validate":"node scripts/validate-data.mjs","test":"node scripts/validate-data.mjs"}}
+{"name":"atram-growth-compass","private":true,"type":"module","scripts":{"validate":"node scripts/validate-data.mjs","audit":"node scripts/authoritative-audit.mjs","test":"node scripts/validate-data.mjs && node scripts/authoritative-audit.mjs"}}

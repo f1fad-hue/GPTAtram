@@ -11,7 +11,9 @@ Mobile-first, static portfolio-research dashboard for the three specified ATRAM 
 
 ## Daily automation
 
-GitHub Actions runs daily at 01:17 UTC, after each push, or manually. It validates the sources and all local model guardrails then redeploys GitHub Pages. It does not silently change economic assumptions: a human must update `data/portfolio.json` only after reviewing new primary-source disclosures.
+GitHub Actions runs daily at 01:17 UTC, after each push, or manually. It retrieves only the sources in `data/source-registry.json`, verifies every factual claim has an approved authoritative citation in `data/claim-registry.json`, validates model guardrails, checks code syntax/static files, stores an audit report for 90 days, then redeploys GitHub Pages.
+
+The automation never silently invents, overwrites, or treats a forecast as factual data. A new factual value must be entered only after the latest official disclosure is reviewed; the daily audit then validates its approved source and evidence trail.
 
 The dashboard is immediately usable at `https://cdn.jsdelivr.net/gh/f1fad-hue/GPTAtram@main/index.html`.
 

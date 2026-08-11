@@ -1,0 +1,12 @@
+{
+  "lastHumanReview": "2026-08-11",
+  "claims": [
+    {"id":"money-market-mandate","kind":"factual","claim":"ATRAM Peso Money Market fund mandate, fees, dealing terms and NAV data","sourceIds":["atram"],"refresh":"daily source check; latest KIIDS required before changing displayed facts"},
+    {"id":"global-tech-target","kind":"factual","claim":"ATRAM Global Technology Feeder target-fund strategy and holdings context","sourceIds":["atram","fidelity"],"refresh":"daily source check; monthly factsheet review"},
+    {"id":"nasdaq-income-target","kind":"factual","claim":"ATRAM Nasdaq Equity Income Feeder target-ETF strategy and distribution context","sourceIds":["atram","jpmorgan"],"refresh":"daily source check; monthly ETF-document review"},
+    {"id":"policy-liquidity","kind":"factual","claim":"Fed and BSP policy/liquidity context","sourceIds":["fed","bsp"],"refresh":"daily source check; revise after each policy decision"},
+    {"id":"macro-context","kind":"factual","claim":"Multilateral macro context","sourceIds":["imf"],"refresh":"daily source check; revise on new official release"},
+    {"id":"sentiment-score","kind":"model","claim":"Five-driver 3/6/12-month macro score","sourceIds":[],"refresh":"daily arithmetic and input-range validation; not an external factual claim"},
+    {"id":"cagr-drawdown-simulation","kind":"model","claim":"CAGR forecast, composite drawdown and Monte Carlo output","sourceIds":[],"refresh":"daily arithmetic, cap and code validation; not an external factual claim"}
+  ]
+}
