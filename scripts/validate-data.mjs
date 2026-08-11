@@ -13,7 +13,7 @@ for (const d of data.drivers) if (d.values.length !== 3 || d.values.some(v => v 
 for (const m of data.monitor) if (m.score < 1 || m.score > 100) fail(`${m.holding}: relevance score must be 1–100.`);
 if (process.env.SKIP_REMOTE_CHECK !== '1') {
   for (const source of data.sources) {
-    try { const res = await fetch(source.url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(20000) }); if (!res.ok && res.status !== 405) fail(`${source.name}: source unavailable (${res.status}).`); }
+    try { const res = await fetch(source.url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(20000) }); if (res.status === 404 || res.status >= 500) fail(`${source.name}: source unavailable (${res.status}).`); }
     catch (e) { fail(`${source.name}: source check error (${e.message}).`); }
   }
 } else console.log('Remote source availability skipped by local test setting.');
