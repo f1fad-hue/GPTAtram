@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071b31" />
+    <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
+    <title>ATRAM Growth Compass</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar wrap">
+      <a class="brand" href="#top" aria-label="ATRAM Growth Compass home"><span>▲</span> ATRAM <b>GROWTH COMPASS</b></a>
+      <a class="pill" href="#sources">Source ledger</a>
+    </header>
+
+    <main id="top" class="wrap">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">10-YEAR RESEARCH MODEL · PHP INVESTOR VIEW</p>
+          <h1>Maximum growth,<br><em>with a hard drawdown guardrail.</em></h1>
+          <p class="lede">A constrained, three-fund model using ATRAM Peso Money Market, ATRAM Global Technology Feeder, and ATRAM Nasdaq Equity Income Feeder.</p>
+          <div class="badges"><span>Daily validation</span><span>10-year horizon</span><span>PHP perspective</span></div>
+        </div>
+        <div class="score-card">
+          <p>Optimized portfolio rate</p>
+          <strong id="portfolio-rate">4.42</strong><span>/ 5 · bullish</span>
+          <div class="meter"><i style="width:88.4%"></i></div>
+          <small id="rate-detail">3–12m macro composite · 25% drawdown cap</small>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Portfolio headline metrics">
+        <article class="metric"><span>Optimized allocation</span><strong id="allocation-total">100%</strong><small>Three required funds</small></article>
+        <article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">9.2%</strong><small>Model output, not a promise</small></article>
+        <article class="metric"><span>Composite drawdown</span><strong id="drawdown">24.4%</strong><small>Within the 25% rating cap</small></article>
+        <article class="metric"><span>Simulation paths</span><strong>10,000</strong><small>Monthly, 10 years</small></article>
+      </section>
+
+      <section class="section-heading"><div><p class="eyebrow">THE ANSWER</p><h2>Constrained maximum-growth allocation</h2></div><p>Risk rating 4.42 maps to the 4.00–4.99 band; the drawdown ceiling is therefore <b>25%</b>.</p></section>
+      <section class="allocation-grid">
+        <article class="panel allocation-card"><div class="donut large" id="active-donut" aria-label="Current allocation donut"></div><div id="active-allocation" class="allocation-legend"></div></article>
+        <article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Growth engine, protected by liquidity.</h3><p id="rationale-copy">The allocation favours global technology exposure, then uses the income-oriented Nasdaq sleeve and short-duration PHP liquidity to keep the composite stress estimate under its non-negotiable 25% limit.</p><ul><li>Concentration is intentional but capped.</li><li>Income sleeve can cushion a range-bound, volatile Nasdaq regime.</li><li>Money-market sleeve preserves optionality and PHP liquidity.</li></ul></article>
+      </section>
+
+      <section class="section-heading"><div><p class="eyebrow">MACRO SENSITIVITY</p><h2>Only drivers that change these allocations</h2></div><p>Scores are model signals from 1 (bearish) to 5 (bullish), not market forecasts.</p></section>
+      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap" id="heatmap"><thead><tr><th>Driver</th><th>3 months</th><th>6 months</th><th>12 months</th><th>Portfolio relevance</th></tr></thead><tbody></tbody></table></div><p class="caption">Composite methodology: 45% 3-month, 35% 6-month, 20% 12-month. Driver selection is deliberately limited to real yields/liquidity, technology earnings and capex, valuations, USD/PHP, option-implied volatility, and inflation/policy.</p></section>
+
+      <section class="section-heading"><div><p class="eyebrow">SCENARIO MAP</p><h2>Allocation by sentiment band</h2></div><p>Donuts show the constrained optimizer’s outputs, rather than an invitation to chase a score.</p></section>
+      <section class="scenario-grid" id="scenario-grid"></section>
+
+      <section class="section-heading"><div><p class="eyebrow">FUND / ETF / EQUITY LOOK-THROUGH</p><h2>Research slides</h2></div><p>Swipe or use the controls. “Observed” never means “forecast.”</p></section>
+      <section class="slides panel">
+        <div id="slides-track" class="slides-track"></div>
+        <div class="slide-controls"><button id="prev" aria-label="Previous slide">←</button><span id="slide-counter">1 / 3</span><button id="next" aria-label="Next slide">→</button></div>
+      </section>
+
+      <section class="section-heading"><div><p class="eyebrow">MONTE CARLO</p><h2>10-year range of outcomes</h2></div><p>10,000 deterministic-reproducible paths using the net forecast, estimated volatility, and 12 monthly steps/year.</p></section>
+      <section class="panel simulation"><canvas id="simulation-chart" width="960" height="360" aria-label="Monte Carlo terminal portfolio value distribution"></canvas><div class="sim-output" id="sim-output"></div><details><summary>Math & model limitations</summary><p>Each path compounds monthly lognormal returns: <code>V(t+1)=V(t)×exp((μ−σ²/2)/12 + σ×Z/√12)</code>. μ is the stated portfolio net-CAGR assumption and σ is the portfolio volatility assumption. The model is educational: it does not predict returns, fully capture tails, taxes, dealing spreads, FX moves, cash distributions, or future fee changes.</p></details></section>
+
+      <section class="section-heading"><div><p class="eyebrow">RELEVANCE MONITOR</p><h2>When each holding stops earning a place</h2></div><p>Not-relevant triggers are pre-committed conditions to investigate—not automatic sell orders.</p></section>
+      <section class="panel monitor"><div class="scroll"><table id="monitor-table"><thead><tr><th>Holding</th><th>Current relevance</th><th>Not-relevant trigger</th><th>Cadence</th></tr></thead><tbody></tbody></table></div></section>
+
+      <section class="panel report" id="sources"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion & source ledger</h2><p>The active model rate is <b>4.42 / 5 (bullish)</b>, producing the rate-4 constrained allocation. Its expected 10-year net CAGR is a scenario estimate, not an investment recommendation. The primary limitation is concentration: both growth sleeves are technology-sensitive and may move together in a risk-off event. Review suitability, currency exposure, tax, liquidity, and the newest official KIIDS before transacting.</p><div id="source-list" class="source-list"></div><p class="disclaimer">Educational research interface only. UITFs are not deposits and are not insured by PDIC. Historical results do not guarantee future results. The daily workflow validates sources, model arithmetic, and build health; it cannot replace investment due diligence or turn a forecast into a fact.</p></section>
+    </main>
+    <footer class="wrap"><span>Last model snapshot: <b id="as-of"></b></span><span>Automated verification: <a href="https://github.com/f1fad-hue/GPTAtram/actions" target="_blank" rel="noreferrer">GitHub Actions</a></span></footer>
+    <script src="app.js"></script>
+  </body>
+</html>
