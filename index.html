@@ -7,6 +7,13 @@
     <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
     <title>ATRAM Growth Compass</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .tabbar{position:sticky;top:0;z-index:5;display:flex;gap:7px;overflow-x:auto;padding:10px 0;background:linear-gradient(180deg,var(--bg) 78%,transparent);margin:2px 0 4px}
+      .tab{flex:0 0 auto;border:1px solid var(--line);background:#0a2034;color:var(--muted);border-radius:999px;padding:.48rem .82rem;font:700 .78rem/1 Inter,system-ui,sans-serif;cursor:pointer}
+      .tab.active{background:var(--lime);border-color:var(--lime);color:#082033}
+      [hidden]{display:none!important}
+      @media(max-width:720px){.tab{padding:.45rem .72rem}.metrics{margin-top:8px}}
+    </style>
   </head>
   <body>
     <header class="topbar wrap">
@@ -19,7 +26,7 @@
         <div>
           <p class="eyebrow">10-YEAR RESEARCH MODEL · PHP INVESTOR VIEW</p>
           <h1>Maximum growth,<br><em>with a hard drawdown guardrail.</em></h1>
-          <p class="lede">A constrained, three-fund model using ATRAM Peso Money Market, ATRAM Global Technology Feeder, and ATRAM Nasdaq Equity Income Feeder.</p>
+          <p class="lede">Three ATRAM funds. Maximum-growth model. Hard drawdown limit.</p>
           <div class="badges"><span>Daily validation</span><span>10-year horizon</span><span>PHP perspective</span></div>
         </div>
         <div class="score-card">
@@ -29,6 +36,14 @@
           <small id="rate-detail">3–12m macro composite · 25% drawdown cap</small>
         </div>
       </section>
+
+      <nav class="tabbar" aria-label="Dashboard sections" role="tablist">
+        <button class="tab active" type="button" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+        <button class="tab" type="button" data-tab="macro" role="tab" aria-selected="false">Macro</button>
+        <button class="tab" type="button" data-tab="research" role="tab" aria-selected="false">Research</button>
+        <button class="tab" type="button" data-tab="monitor" role="tab" aria-selected="false">Monitor</button>
+        <button class="tab" type="button" data-tab="sources" role="tab" aria-selected="false">Sources</button>
+      </nav>
 
       <section class="metrics" aria-label="Portfolio headline metrics">
         <article class="metric"><span>Optimized allocation</span><strong id="allocation-total">100%</strong><small>Three required funds</small></article>

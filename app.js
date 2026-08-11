@@ -1,6 +1,24 @@
 const $ = (s) => document.querySelector(s);
 const fmt = (v, digits = 1) => `${Number(v).toFixed(digits)}%`;
 
+const heading = (text) => [...document.querySelectorAll('.section-heading')].find(node => node.textContent.includes(text));
+const tabGroups = {
+  overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid')],
+  macro: [heading('Only drivers that change these allocations'), $('.heatmap-wrap'), heading('Allocation by sentiment band'), $('#scenario-grid')],
+  research: [heading('Research slides'), $('.slides'), heading('10-year range of outcomes'), $('.simulation')],
+  monitor: [heading('When each holding stops earning a place'), $('.monitor')],
+  sources: [$('.report')]
+};
+const tabs = [...document.querySelectorAll('[data-tab]')];
+function selectTab(name) {
+  Object.entries(tabGroups).forEach(([group, nodes]) => nodes.filter(Boolean).forEach(node => { node.hidden = group !== name; }));
+  tabs.forEach(tab => { const active = tab.dataset.tab === name; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)); });
+  history.replaceState(null, '', `#${name}`);
+}
+tabs.forEach(tab => tab.addEventListener('click', () => selectTab(tab.dataset.tab)));
+const requestedTab = location.hash.slice(1);
+selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
+
 fetch('data/portfolio.json').then(r => r.json()).then(data => {
   const p = data.portfolio;
   $('#portfolio-rate').textContent = p.rate.toFixed(2);
