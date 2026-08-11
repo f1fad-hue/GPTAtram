@@ -1,6 +1,13 @@
 const $ = (s) => document.querySelector(s);
 const fmt = (v, digits = 1) => `${Number(v).toFixed(digits)}%`;
 
+const themeToggle = $('#theme-toggle');
+themeToggle.addEventListener('click', () => {
+  const dark = document.body.classList.toggle('dark');
+  themeToggle.textContent = dark ? 'Light mode' : 'Dark mode';
+  themeToggle.setAttribute('aria-pressed', String(dark));
+});
+
 const heading = (text) => [...document.querySelectorAll('.section-heading')].find(node => node.textContent.includes(text));
 const tabGroups = {
   overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid')],

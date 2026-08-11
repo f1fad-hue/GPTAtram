@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#071b31" />
+    <meta name="theme-color" content="#f5f7fb" />
     <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
     <title>ATRAM Growth Compass</title>
     <link rel="stylesheet" href="styles.css" />
@@ -12,13 +12,19 @@
       .tab{flex:0 0 auto;border:1px solid var(--line);background:#0a2034;color:var(--muted);border-radius:999px;padding:.48rem .82rem;font:700 .78rem/1 Inter,system-ui,sans-serif;cursor:pointer}
       .tab.active{background:var(--lime);border-color:var(--lime);color:#082033}
       [hidden]{display:none!important}
+      :root{--ink:#17324d;--muted:#64748b;--bg:#f5f7fb;--panel:#fff;--line:#dbe4ee;--lime:#79c83d;--cyan:#0989a7;--orange:#e58b22}
+      body{background:linear-gradient(155deg,#eef8ff 0,#f7f9fc 42%,#f5f7fb 100%);color:var(--ink)}
+      .brand{color:#17324d}.brand span{color:#61a932}.pill,.badges span{background:#fff;color:#52667b;border-color:#d5e0ea}.panel,.metric{background:#fff;border-color:#dbe4ee;box-shadow:0 10px 28px #31577812}.score-card{background:#eef8ff;border-color:#bcddec}.score-card p,.score-card span,.score-card small,.metric span,.metric small,.section-heading>p,.lede,.rationale p,.rationale li,.caption,.slide p,.sim-output,.simulation details,#monitor-table td,.report>p:not(.eyebrow),footer{color:#62748a}.score-card strong{color:#4d9d24}.meter{background:#d7e8f0}.donut:after{background:#fff}.fact{background:#f8fbfd;border-color:#dbe4ee}.simulation canvas{background:#fbfdff;border-color:#dbe4ee}.tabbar{background:linear-gradient(180deg,var(--bg) 78%,transparent)}.tab{background:#fff;color:#587087;border-color:#dbe4ee}.tab.active{background:#17324d;border-color:#17324d;color:#fff}.slide-controls button{background:#e8f2f7;border-color:#c9dde8;color:#17324d}.source{background:#fbfdff;border-color:#dbe4ee}.disclaimer{border-left-color:#e58b22}
+      body.dark{--ink:#eaf2ff;--muted:#9bb0ca;--bg:#061523;--panel:#0a2034;--line:#173652;--lime:#b9f64c;--cyan:#47d8e8;--orange:#ffad4d;background:radial-gradient(900px 420px at 80% -10%,#12446a55,transparent),var(--bg)}
+      body.dark .brand{color:#fff}body.dark .pill,body.dark .badges span,body.dark .panel,body.dark .metric{background:#0a2034;border-color:#173652}body.dark .score-card{background:#071827;border-color:#225274}body.dark .donut:after{background:#092037}body.dark .fact{background:#071a2a;border-color:#173652}body.dark .simulation canvas{background:#061727;border-color:#173652}body.dark .tab{background:#0a2034;color:#9bb0ca;border-color:#173652}body.dark .tab.active{background:var(--lime);border-color:var(--lime);color:#082033}body.dark .source{background:#071a2a;border-color:#173652}
+      #theme-toggle{font:700 .76rem/1 Inter,system-ui,sans-serif;cursor:pointer}
       @media(max-width:720px){.tab{padding:.45rem .72rem}.metrics{margin-top:8px}}
     </style>
   </head>
   <body>
     <header class="topbar wrap">
       <a class="brand" href="#top" aria-label="ATRAM Growth Compass home"><span>▲</span> ATRAM <b>GROWTH COMPASS</b></a>
-      <a class="pill" href="#sources">Source ledger</a>
+      <button class="pill" id="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
     </header>
 
     <main id="top" class="wrap">
