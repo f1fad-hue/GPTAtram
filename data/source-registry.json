@@ -12,6 +12,6 @@
     {"id":"jpmorgan","name":"JPM Nasdaq Equity Premium Income Active UCITS ETF material","authority":"Target-ETF manager","url":"https://am.jpmorgan.com/content/dam/jpm-am-aem/asiapacific/sg/en/literature/product-presentation/highlights-jpmorgan-nasdaq-equity-premium-income-active-ucits-etf.pdf","domain":"am.jpmorgan.com"},
     {"id":"cboe","name":"Cboe VIX Index","authority":"Index administrator","url":"https://www.cboe.com/tradable_products/vix/","domain":"cboe.com"},
     {"id":"nasdaq","name":"Nasdaq-100 Index overview","authority":"Index administrator","url":"https://indexes.nasdaqomx.com/Index/Overview/NDX","domain":"indexes.nasdaqomx.com"},
-    {"id":"imf","name":"IMF Data","authority":"Multilateral institution","url":"https://www.imf.org/en/Data","domain":"imf.org"}
+    {"id":"worldbank","name":"World Bank Global Economic Prospects","authority":"Multilateral institution","url":"https://thedocs.worldbank.org/en/doc/2b672b3b0415d6b66c45b66579db4ef5-0050012026/original/GEP-Jun-2026.pdf","domain":"worldbank.org"}
   ]
 }

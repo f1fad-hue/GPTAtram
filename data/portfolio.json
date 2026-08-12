@@ -50,7 +50,7 @@
     {"id":"valuation","name":"Nasdaq valuation and concentration","values":[3.3,3.1,3.0],"relevance":"Entry risk, upside asymmetry and drawdown","sourceIds":["nasdaq"]},
     {"id":"volatility","name":"Option-implied volatility and premium","values":[4.1,3.8,3.6],"relevance":"Nasdaq income ETF option-premium opportunity","sourceIds":["cboe","jpmorgan"]},
     {"id":"fx","name":"USD/PHP direction and volatility","values":[3.9,3.8,3.7],"relevance":"Unhedged feeder-fund return in PHP","sourceIds":["bsp"]},
-    {"id":"globalDemand","name":"Global growth and technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth","sourceIds":["imf"]}
+    {"id":"globalDemand","name":"Global growth and technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth","sourceIds":["worldbank"]}
   ],
   "scenarios": [
     {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.93,"netCagr":7.675,"allocation":[25,25,50]},
@@ -75,6 +75,7 @@
     {"name":"JPM Nasdaq Equity Premium Income ETF","detail":"Official target-ETF strategy, expense ratio, risks and covered-call methodology.","url":"https://am.jpmorgan.com/content/dam/jpm-am-aem/asiapacific/sg/en/literature/product-presentation/highlights-jpmorgan-nasdaq-equity-premium-income-active-ucits-etf.pdf"},
     {"name":"BSP and Federal Reserve","detail":"Primary Philippine and US policy, liquidity, inflation and FX context.","url":"https://www.bsp.gov.ph/"},
     {"name":"BLS, BEA and Federal Reserve data","detail":"Primary US inflation, labor, growth, real-yield and financial-conditions inputs.","url":"https://fred.stlouisfed.org/series/DFII10"},
-    {"name":"Cboe, Nasdaq and IMF","detail":"Official volatility/index methodology and multilateral global-growth context.","url":"https://www.cboe.com/tradable_products/vix/"}
+    {"name":"Cboe and Nasdaq","detail":"Official volatility and index methodology context.","url":"https://www.cboe.com/tradable_products/vix/"},
+    {"name":"World Bank Global Economic Prospects","detail":"Official multilateral global-growth and technology-demand context.","url":"https://thedocs.worldbank.org/en/doc/2b672b3b0415d6b66c45b66579db4ef5-0050012026/original/GEP-Jun-2026.pdf"}
   ]
 }
