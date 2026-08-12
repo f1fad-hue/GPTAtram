@@ -4,8 +4,14 @@
     {"id":"atram","name":"ATRAM official disclosures","authority":"Fund manager","url":"https://www.atram.com.ph/","domain":"atram.com.ph"},
     {"id":"bsp","name":"Bangko Sentral ng Pilipinas","authority":"Philippine central bank","url":"https://www.bsp.gov.ph/","domain":"bsp.gov.ph"},
     {"id":"fed","name":"Federal Reserve FOMC statement","authority":"US central bank","url":"https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm","domain":"federalreserve.gov"},
+    {"id":"realYields","name":"10-year Treasury inflation-indexed yield","authority":"Federal Reserve Economic Data","url":"https://fred.stlouisfed.org/series/DFII10","domain":"fred.stlouisfed.org"},
+    {"id":"bls","name":"US Bureau of Labor Statistics","authority":"US statistical agency","url":"https://www.bls.gov/cpi/","domain":"bls.gov"},
+    {"id":"bea","name":"US Bureau of Economic Analysis","authority":"US statistical agency","url":"https://www.bea.gov/data/gdp/gross-domestic-product","domain":"bea.gov"},
+    {"id":"fred","name":"Federal Reserve financial conditions data","authority":"Federal Reserve Bank of Chicago data via FRED","url":"https://fred.stlouisfed.org/series/NFCI","domain":"fred.stlouisfed.org"},
     {"id":"fidelity","name":"Fidelity Global Technology Fund factsheet","authority":"Target-fund manager","url":"https://www.fidelityinternational.com/legal/documents/SG-en/hffs.SG-en.SG.G-TEC.pdf","domain":"fidelityinternational.com"},
     {"id":"jpmorgan","name":"JPM Nasdaq Equity Premium Income Active UCITS ETF material","authority":"Target-ETF manager","url":"https://am.jpmorgan.com/content/dam/jpm-am-aem/asiapacific/sg/en/literature/product-presentation/highlights-jpmorgan-nasdaq-equity-premium-income-active-ucits-etf.pdf","domain":"am.jpmorgan.com"},
+    {"id":"cboe","name":"Cboe VIX Index","authority":"Index administrator","url":"https://www.cboe.com/tradable_products/vix/","domain":"cboe.com"},
+    {"id":"nasdaq","name":"Nasdaq-100 Index overview","authority":"Index administrator","url":"https://indexes.nasdaqomx.com/Index/Overview/NDX","domain":"indexes.nasdaqomx.com"},
     {"id":"imf","name":"IMF Data","authority":"Multilateral institution","url":"https://www.imf.org/en/Data","domain":"imf.org"}
   ]
 }

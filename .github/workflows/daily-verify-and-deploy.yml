@@ -51,7 +51,7 @@ jobs:
           git diff --check
           test -f index.html && test -f app.js && test -f styles.css
           grep -q 'Monte Carlo' index.html
-          grep -q 'Policy, real yields & liquidity' data/portfolio.json
+          grep -q 'Fed policy, US real yields & liquidity' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -11,7 +11,7 @@ const errors = [], warnings = [], records = [];
 const fail = (message) => errors.push(message);
 const sourceById = new Map(registry.sources.map(source => [source.id, source]));
 
-if (portfolio.drivers.length !== 5) fail(`Expected exactly 5 non-overlapping macro drivers; found ${portfolio.drivers.length}.`);
+if (portfolio.drivers.length !== 10) fail(`Expected exactly 10 non-overlapping macro drivers; found ${portfolio.drivers.length}.`);
 for (const source of registry.sources) {
   const url = new URL(source.url);
   if (url.protocol !== 'https:' || !url.hostname.endsWith(source.domain)) fail(`${source.id}: source URL is not the declared authoritative HTTPS domain.`);

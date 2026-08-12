@@ -46,7 +46,7 @@ fetch('data/portfolio.json').then(r => r.json()).then(data => {
   renderDrawdownMath(data, macroRate, portfolioDd);
 
   const heat = $('#heatmap tbody');
-  heat.innerHTML = data.drivers.map(d => `<tr><td>${d.name}</td>${d.values.map(v => `<td><div class="heat" style="background:${heatColor(v)}">${v.toFixed(1)}</div></td>`).join('')}<td>${d.relevance}</td></tr>`).join('');
+  heat.innerHTML = data.drivers.map(d => `<tr><td>${d.name}</td>${d.values.map(v => `<td><div class="heat" style="background:${heatColor(v)}">${v.toFixed(1)}</div></td>`).join('')}<td><b>${(data.macroModel.driverWeights[d.id] * 100).toFixed(0)}%</b></td><td>${d.relevance}</td></tr>`).join('');
   const colors = p.allocation.map(x => x.color);
   $('#scenario-grid').innerHTML = data.scenarios.map((s,i) => `<article class="scenario panel"><header><div><p class="eyebrow">RATE ${s.rate}</p><h3>${s.label}</h3></div><b>${s.cap}% cap</b></header><div class="donut" data-label="${s.dd}%\A composite DD"></div><p>Money ${s.allocation[0]}% · Tech ${s.allocation[1]}% · Nasdaq income ${s.allocation[2]}%</p></article>`).join('');
   [...document.querySelectorAll('.scenario .donut')].forEach((node,i) => renderDonut(node, data.scenarios[i].allocation.map((weight,j) => ({weight,color:colors[j]}))));

@@ -1,7 +1,7 @@
 {
   "asOf": "2026-08-12",
   "portfolio": {
-    "rate": 3.95,
+    "rate": 3.85,
     "rateBand": "3.00-3.99",
     "drawdownCap": 20,
     "netCagrForecast": 8.4,
@@ -14,7 +14,7 @@
   },
   "macroModel": {
     "horizonWeights":{"threeMonth":0.45,"sixMonth":0.35,"twelveMonth":0.20},
-    "driverWeights":{"policy":0.22,"technology":0.34,"valuation":0.18,"volatility":0.16,"fx":0.10},
+    "driverWeights":{"fedPolicy":0.14,"bspPolicy":0.10,"usInflation":0.08,"usGrowth":0.08,"financialConditions":0.08,"technology":0.20,"valuation":0.10,"volatility":0.08,"fx":0.08,"globalDemand":0.06},
     "rateFormula":"Sum of each 3/6/12-month driver composite multiplied by its allocation-relevance weight."
   },
   "drawdownModel": {
@@ -28,11 +28,16 @@
     "correlations":{"money":{"money":1,"tech":0.10,"nasdaq":0.10},"tech":{"money":0.10,"tech":1,"nasdaq":0.80},"nasdaq":{"money":0.10,"tech":0.80,"nasdaq":1}}
   },
   "drivers": [
-    {"id":"policy","name":"Policy, real yields & liquidity","values":[4.0,3.9,3.7],"relevance":"Fed 70% / BSP 30%; valuation, PHP carry & liquidity"},
-    {"id":"technology","name":"Technology earnings & AI capex","values":[4.6,4.4,4.2],"relevance":"Global Technology growth engine"},
-    {"id":"valuation","name":"Nasdaq valuation dispersion","values":[3.3,3.1,3.0],"relevance":"Equity drawdown & entry risk"},
-    {"id":"volatility","name":"Option-implied volatility","values":[4.1,3.8,3.6],"relevance":"Income ETF premium opportunity"},
-    {"id":"fx","name":"USD/PHP direction","values":[3.9,3.8,3.7],"relevance":"Unhedged PHP feeder FX exposure"}
+    {"id":"fedPolicy","name":"Fed policy, US real yields & liquidity","values":[3.8,3.7,3.5],"relevance":"Tech valuation and global equity liquidity; Fed/FRED"},
+    {"id":"bspPolicy","name":"BSP policy & PHP money-market yield","values":[4.1,4.0,3.8],"relevance":"Money-market carry and PHP opportunity cost; BSP"},
+    {"id":"usInflation","name":"US inflation trend","values":[3.7,3.6,3.5],"relevance":"Fed path and long-duration technology multiples; BLS"},
+    {"id":"usGrowth","name":"US growth & labor resilience","values":[3.8,3.7,3.6],"relevance":"Nasdaq revenue and earnings-cycle demand; BEA/BLS"},
+    {"id":"financialConditions","name":"US financial conditions & credit stress","values":[3.9,3.8,3.6],"relevance":"Risk appetite and cross-sleeve equity drawdown; Federal Reserve"},
+    {"id":"technology","name":"Technology earnings & AI capex","values":[4.6,4.4,4.2],"relevance":"Global Technology growth engine; Fidelity/issuer filings"},
+    {"id":"valuation","name":"Nasdaq valuation & concentration","values":[3.3,3.1,3.0],"relevance":"Entry risk, upside asymmetry and equity drawdown; Nasdaq"},
+    {"id":"volatility","name":"Option-implied volatility & premium","values":[4.1,3.8,3.6],"relevance":"Nasdaq income ETF option-premium opportunity; Cboe/JPMorgan"},
+    {"id":"fx","name":"USD/PHP direction & volatility","values":[3.9,3.8,3.7],"relevance":"Unhedged feeder-fund return in PHP; BSP"},
+    {"id":"globalDemand","name":"Global growth & technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth; IMF"}
   ],
   "scenarios": [
     {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.9,"allocation":[34,36,30]},
@@ -53,6 +58,8 @@
     {"name":"ATRAM fund disclosures","detail":"Primary source for fund mandate, fees, dealing terms and KIIDS. Daily link validation; values must be refreshed only from the newest official document.","url":"https://www.atram.com.ph/"},
     {"name":"Bangko Sentral ng Pilipinas","detail":"Primary Philippine policy and macro source for liquidity, inflation and FX context.","url":"https://www.bsp.gov.ph/"},
     {"name":"Federal Reserve","detail":"Primary US policy and liquidity source for the global equity sleeves.","url":"https://www.federalreserve.gov/"},
+    {"name":"Federal Reserve data, BLS and BEA","detail":"Primary real-yield, financial-conditions, inflation, labor and growth inputs for the US cycle drivers.","url":"https://fred.stlouisfed.org/series/DFII10"},
+    {"name":"Cboe and Nasdaq indexes","detail":"Primary index-administrator context for implied volatility, valuation and concentration signals.","url":"https://www.cboe.com/tradable_products/vix/"},
     {"name":"J.P. Morgan Asset Management","detail":"Primary source for the Nasdaq Equity Premium Income Active UCITS ETF target strategy.","url":"https://am.jpmorgan.com/"},
     {"name":"Fidelity International","detail":"Primary source for the Global Technology Fund target strategy and current literature.","url":"https://www.fidelityinternational.com/"},
     {"name":"GitHub Actions audit log","detail":"Daily source availability, claim coverage, data-shape, arithmetic, simulation and build checks.","url":"https://github.com/f1fad-hue/GPTAtram/actions"}

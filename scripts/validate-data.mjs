@@ -9,8 +9,10 @@ for (const scenario of data.scenarios) {
   if (sum(scenario.allocation) !== 100) fail(`${scenario.rate}: allocation must equal 100%.`);
   if (scenario.dd > scenario.cap) fail(`${scenario.rate}: stated DD exceeds cap.`);
 }
-if (data.drivers.length !== 5) fail('Macro model must use exactly five portfolio-relevant drivers.');
+if (data.drivers.length !== 10) fail('Macro model must use exactly ten non-overlapping portfolio-relevant drivers.');
 if (data.drivers.some(driver => driver.values.length !== 3 || driver.values.some(value => value < 1 || value > 5))) fail('Macro scores must be 1-5 across 3/6/12 months.');
+if (new Set(data.drivers.map(driver => driver.id)).size !== data.drivers.length) fail('Macro driver IDs must be unique to prevent double-counting.');
+if (data.drivers.some(driver => !driver.relevance || !(driver.id in data.macroModel.driverWeights))) fail('Every macro driver must document its allocation relevance and model weight.');
 
 const h = data.macroModel?.horizonWeights;
 const driverWeights = data.macroModel?.driverWeights;
