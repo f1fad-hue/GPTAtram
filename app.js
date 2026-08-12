@@ -26,7 +26,7 @@ tabs.forEach(tab => tab.addEventListener('click', () => selectTab(tab.dataset.ta
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json').then(r => r.json()).then(data => {
+fetch('data/portfolio.json?v=20260812-4', { cache: 'no-store' }).then(r => r.json()).then(data => {
   const p = data.portfolio;
   const macroRate = calculateMacroRate(data);
   const portfolioDd = calculatePortfolioDrawdown(data);

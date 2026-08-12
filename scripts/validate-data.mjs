@@ -5,8 +5,10 @@ const fail = (message) => { console.error(`VALIDATION FAILED: ${message}`); proc
 const sum = (xs) => xs.reduce((a, x) => a + x, 0);
 
 if (sum(data.portfolio.allocation.map(item => item.weight)) !== 100) fail('Active allocation must equal 100%.');
+if (data.portfolio.allocation.some(item => item.weight % 5 !== 0)) fail('Active allocation weights must be rounded to 5% increments.');
 for (const scenario of data.scenarios) {
   if (sum(scenario.allocation) !== 100) fail(`${scenario.rate}: allocation must equal 100%.`);
+  if (scenario.allocation.some(weight => weight % 5 !== 0)) fail(`${scenario.rate}: allocation weights must be rounded to 5% increments.`);
   if (scenario.dd > scenario.cap) fail(`${scenario.rate}: stated DD exceeds cap.`);
 }
 if (data.drivers.length !== 10) fail('Macro model must use exactly ten non-overlapping portfolio-relevant drivers.');

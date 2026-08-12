@@ -7,8 +7,8 @@
     "netCagrForecast": 8.4,
     "volatility": 0.16,
     "allocation": [
-      {"id":"money","name":"ATRAM Peso Money Market","weight":34,"color":"#b9f64c"},
-      {"id":"tech","name":"ATRAM Global Technology Feeder","weight":36,"color":"#47d8e8"},
+      {"id":"money","name":"ATRAM Peso Money Market","weight":35,"color":"#b9f64c"},
+      {"id":"tech","name":"ATRAM Global Technology Feeder","weight":35,"color":"#47d8e8"},
       {"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder","weight":30,"color":"#ffad4d"}
     ]
   },
@@ -40,9 +40,9 @@
     {"id":"globalDemand","name":"Global growth & technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth; IMF"}
   ],
   "scenarios": [
-    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.9,"allocation":[34,36,30]},
+    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.5,"allocation":[35,35,30]},
     {"rate":"4.00-4.99","label":"Growth tilt","cap":25,"dd":24.4,"allocation":[20,45,35]},
-    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":29.7,"allocation":[7,60,33]}
+    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":29.2,"allocation":[10,60,30]}
   ],
   "slides": [
     {"tag":"FUND / PHP LIQUIDITY","title":"ATRAM Peso Money Market Fund","thesis":"Liquidity and short-duration ballast. This is the portfolio's drawdown and funding sleeve, not its long-run growth engine.","facts":[["Observed one-year return","4.05%","Official KIIDS snapshot: Aug 2025"],["Trust fee snapshot","0.52%","Official KIIDS snapshot: Oct 2024"],["10Y net CAGR","Not observable","Use a forward model; do not backfill"],["Composite drawdown","0.24%","60% history + 40% forward median"]],"source":"https://www.atram.com.ph/","sourceText":"ATRAM official fund disclosures"},
