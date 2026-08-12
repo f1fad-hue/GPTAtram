@@ -91,6 +91,15 @@ function renderDrawdownMath(data, macroRate, portfolioDd) {
 function renderDonut(node, allocation) {
   let cursor = 0;
   node.style.background = `conic-gradient(${allocation.map(a => { const end = cursor + a.weight; const part = `${a.color} ${cursor}% ${end}%`; cursor = end; return part; }).join(',')})`;
+  cursor = 0;
+  node.innerHTML = allocation.map((item) => {
+    const midpoint = cursor + item.weight / 2;
+    const angle = midpoint * 3.6 * Math.PI / 180;
+    const x = 50 + Math.sin(angle) * 39;
+    const y = 50 - Math.cos(angle) * 39;
+    cursor += item.weight;
+    return `<span class="donut-label" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">${item.weight}%</span>`;
+  }).join('');
 }
 function heatColor(v) { const hue = 3 + ((v - 1) / 4) * 125; return `hsl(${hue} 70% 27%)`; }
 function rng(seed=20260811) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
