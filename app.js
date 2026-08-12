@@ -62,6 +62,11 @@ fetch('data/portfolio.json?v=20260812-4', { cache: 'no-store' }).then(r => r.jso
   runMonteCarlo(p.netCagrForecast / 100, p.volatility);
 });
 
+fetch('data/monitoring.json', { cache: 'no-store' }).then(response => response.ok ? response.json() : Promise.reject()).then(snapshot => {
+  const checked = new Date(snapshot.verifiedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  $('#monitoring-status').innerHTML = `Daily cloud verification: <a href="${snapshot.runUrl}" target="_blank" rel="noreferrer">passed ${checked}</a>`;
+}).catch(() => { $('#monitoring-status').textContent = 'Daily cloud verification: awaiting next scheduled run'; });
+
 function calculateMacroRate(data) {
   const h = data.macroModel.horizonWeights;
   return data.drivers.reduce((total, driver) => {
