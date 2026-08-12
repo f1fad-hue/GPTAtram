@@ -26,6 +26,7 @@ if (data.portfolio.drawdownCap !== expectedCap) fail(`Macro rate ${macroRate.toF
 
 const dd = data.drawdownModel;
 if (!dd || Math.abs(sum(Object.values(dd.weights)) - 1) > 1e-9) fail('Historical/forward drawdown weights must sum to 100%.');
+if (dd?.weights.historical !== 0.60 || dd?.weights.forwardMedian !== 0.40) fail('Drawdown composite must remain exactly 60% historical/proxy and 40% forward-looking median.');
 const allocation = Object.fromEntries(data.portfolio.allocation.map(item => [item.id, item.weight / 100]));
 const composite = Object.fromEntries(dd.funds.map(fund => [fund.id, (fund.historical * dd.weights.historical + fund.forwardMedian * dd.weights.forwardMedian) / 100]));
 let variance = 0;
