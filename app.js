@@ -10,7 +10,7 @@ themeToggle.addEventListener('click', () => {
 
 const heading = (text) => [...document.querySelectorAll('.section-heading')].find(node => node.textContent.includes(text));
 const tabGroups = {
-  overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid')],
+  overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid'), $('#dd-math')],
   macro: [heading('Only drivers that change these allocations'), $('.heatmap-wrap'), heading('Allocation by sentiment band'), $('#scenario-grid')],
   research: [heading('Research slides'), $('.slides'), heading('10-year range of outcomes'), $('.simulation')],
   monitor: [heading('When each holding stops earning a place'), $('.monitor')],
@@ -28,14 +28,22 @@ selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
 fetch('data/portfolio.json').then(r => r.json()).then(data => {
   const p = data.portfolio;
-  $('#portfolio-rate').textContent = p.rate.toFixed(2);
+  const macroRate = calculateMacroRate(data);
+  const portfolioDd = calculatePortfolioDrawdown(data);
+  $('#portfolio-rate').textContent = macroRate.toFixed(2);
+  $('.meter i').style.width = `${macroRate / 5 * 100}%`;
+  $('.metrics .metric:nth-child(3) small').textContent = `Within the active ${p.drawdownCap}% rating cap`;
+  heading('Constrained maximum-growth allocation').querySelector(':scope > p').innerHTML = `Macro score <b>${macroRate.toFixed(2)} / 5</b> maps to the <b>${p.rateBand}</b> band; the drawdown ceiling is therefore <b>${p.drawdownCap}%</b>.`;
+  $('#rationale-copy').textContent = `The allocation favours global technology exposure, then uses the income-oriented Nasdaq sleeve and short-duration PHP liquidity to keep the ${portfolioDd.toFixed(2)}% composite estimate within its non-negotiable ${p.drawdownCap}% limit.`;
+  $('#sources > p:nth-of-type(2)').innerHTML = `The active model rate is <b>${macroRate.toFixed(2)} / 5</b>, producing the ${p.rateBand} constrained allocation and a ${portfolioDd.toFixed(2)}% composite drawdown estimate. Its expected 10-year net CAGR is a scenario estimate, not an investment recommendation. The primary limitation is concentration: both growth sleeves are technology-sensitive and may move together in a risk-off event. Review suitability, currency exposure, tax, liquidity, and the newest official KIIDS before transacting.`;
   $('#rate-detail').textContent = `3–12m macro composite · ${p.drawdownCap}% drawdown cap`;
   $('#allocation-total').textContent = `${p.allocation.reduce((a,x) => a + x.weight, 0)}%`;
   $('#cagr-forecast').textContent = fmt(p.netCagrForecast);
-  $('#drawdown').textContent = fmt(data.scenarios[1].dd);
+  $('#drawdown').textContent = fmt(portfolioDd);
   $('#as-of').textContent = new Date(data.asOf + 'T00:00:00').toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'});
   renderDonut($('#active-donut'), p.allocation);
   $('#active-allocation').innerHTML = p.allocation.map(x => `<div class="legend-row"><span><i class="dot" style="background:${x.color}"></i>${x.name}</span><b>${x.weight}%</b></div>`).join('');
+  renderDrawdownMath(data, macroRate, portfolioDd);
 
   const heat = $('#heatmap tbody');
   heat.innerHTML = data.drivers.map(d => `<tr><td>${d.name}</td>${d.values.map(v => `<td><div class="heat" style="background:${heatColor(v)}">${v.toFixed(1)}</div></td>`).join('')}<td>${d.relevance}</td></tr>`).join('');
@@ -53,6 +61,32 @@ fetch('data/portfolio.json').then(r => r.json()).then(data => {
   $('#source-list').innerHTML = data.sources.map(s => `<div class="source"><b>${s.name}</b><span>${s.detail}</span><a href="${s.url}" target="_blank" rel="noreferrer">Open source ↗</a></div>`).join('');
   runMonteCarlo(p.netCagrForecast / 100, p.volatility);
 });
+
+function calculateMacroRate(data) {
+  const h = data.macroModel.horizonWeights;
+  return data.drivers.reduce((total, driver) => {
+    const composite = driver.values[0] * h.threeMonth + driver.values[1] * h.sixMonth + driver.values[2] * h.twelveMonth;
+    return total + composite * data.macroModel.driverWeights[driver.id];
+  }, 0);
+}
+function calculatePortfolioDrawdown(data) {
+  const model = data.drawdownModel;
+  const composites = Object.fromEntries(model.funds.map(fund => [fund.id, (fund.historical * model.weights.historical + fund.forwardMedian * model.weights.forwardMedian) / 100]));
+  const weights = Object.fromEntries(data.portfolio.allocation.map(fund => [fund.id, fund.weight / 100]));
+  const ids = Object.keys(weights);
+  let variance = 0;
+  for (const left of ids) for (const right of ids) variance += weights[left] * composites[left] * weights[right] * composites[right] * model.correlations[left][right];
+  return Math.sqrt(variance) * 100;
+}
+function renderDrawdownMath(data, macroRate, portfolioDd) {
+  const model = data.drawdownModel;
+  const rows = model.funds.map(fund => {
+    const composite = fund.historical * model.weights.historical + fund.forwardMedian * model.weights.forwardMedian;
+    const allocation = data.portfolio.allocation.find(item => item.id === fund.id);
+    return `<tr><td>${allocation.name}</td><td>${fund.historical.toFixed(2)}%</td><td>${fund.forwardMedian.toFixed(2)}%</td><td><b>${composite.toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
+  }).join('');
+  $('#dd-math').innerHTML = `<p class="eyebrow">TRANSPARENT DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Macro score = <b>${macroRate.toFixed(2)} / 5</b>; it falls in the ${data.portfolio.rateBand} band, so the optimizer must remain at or below <b>${data.portfolio.drawdownCap}%</b>.</p><div class="scroll"><table><thead><tr><th>Fund</th><th>Historical / proxy DD</th><th>Forward median DD</th><th>60% + 40% composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio equation: sqrt(sum_i sum_j (w_i * DD_i * w_j * DD_j * rho_ij)). Correlations: money/tech 0.10, money/Nasdaq 0.10, tech/Nasdaq 0.80. The Nasdaq historical input is a target-ETF proxy because the ATRAM feeder launched in 2026. Forward medians are 10-year scenario assumptions, not predictions.</p>`;
+}
 
 function renderDonut(node, allocation) {
   let cursor = 0;

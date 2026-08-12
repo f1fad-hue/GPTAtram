@@ -1,34 +1,60 @@
 {
-  "asOf": "2026-08-11",
-  "portfolio": {"rate": 4.42, "rateBand": "4.00–4.99", "drawdownCap": 25, "netCagrForecast": 9.2, "volatility": 0.19, "allocation": [{"id":"money","name":"ATRAM Peso Money Market", "weight":20, "color":"#b9f64c"},{"id":"tech","name":"ATRAM Global Technology Feeder", "weight":45, "color":"#47d8e8"},{"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder", "weight":35, "color":"#ffad4d"}]},
+  "asOf": "2026-08-12",
+  "portfolio": {
+    "rate": 3.95,
+    "rateBand": "3.00-3.99",
+    "drawdownCap": 20,
+    "netCagrForecast": 8.4,
+    "volatility": 0.16,
+    "allocation": [
+      {"id":"money","name":"ATRAM Peso Money Market","weight":34,"color":"#b9f64c"},
+      {"id":"tech","name":"ATRAM Global Technology Feeder","weight":36,"color":"#47d8e8"},
+      {"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder","weight":30,"color":"#ffad4d"}
+    ]
+  },
+  "macroModel": {
+    "horizonWeights":{"threeMonth":0.45,"sixMonth":0.35,"twelveMonth":0.20},
+    "driverWeights":{"policy":0.22,"technology":0.34,"valuation":0.18,"volatility":0.16,"fx":0.10},
+    "rateFormula":"Sum of each 3/6/12-month driver composite multiplied by its allocation-relevance weight."
+  },
+  "drawdownModel": {
+    "weights":{"historical":0.60,"forwardMedian":0.40},
+    "formula":"Fund composite DD = 60% observed-history/proxy maximum drawdown + 40% forward-looking median drawdown. Portfolio DD uses allocation-weighted composites and the correlation matrix.",
+    "funds":[
+      {"id":"money","historical":0.10,"forwardMedian":0.45,"historicalBasis":"Observed ATRAM fund NAV history; short-duration money-market profile.","forwardBasis":"10-year forward scenario median; not a forecast."},
+      {"id":"tech","historical":44.00,"forwardMedian":32.00,"historicalBasis":"ATRAM feeder observed NAV history where available; target-fund proxy only for any missing period.","forwardBasis":"10-year forward scenario median; not a forecast."},
+      {"id":"nasdaq","historical":24.00,"forwardMedian":20.00,"historicalBasis":"Target-ETF proxy: ATRAM feeder launched in 2026, so it has no long fund history.","forwardBasis":"10-year forward scenario median; not a forecast."}
+    ],
+    "correlations":{"money":{"money":1,"tech":0.10,"nasdaq":0.10},"tech":{"money":0.10,"tech":1,"nasdaq":0.80},"nasdaq":{"money":0.10,"tech":0.80,"nasdaq":1}}
+  },
   "drivers": [
-    {"name":"Policy, real yields & liquidity", "values":[4.0,3.9,3.7], "relevance":"Fed 70% / BSP 30%; valuation, PHP carry & liquidity"},
-    {"name":"Technology earnings & AI capex", "values":[4.6,4.4,4.2], "relevance":"Global Technology growth engine"},
-    {"name":"Nasdaq valuation dispersion", "values":[3.3,3.1,3.0], "relevance":"Equity drawdown & entry risk"},
-    {"name":"Option-implied volatility", "values":[4.1,3.8,3.6], "relevance":"Income ETF premium opportunity"},
-    {"name":"USD/PHP direction", "values":[3.9,3.8,3.7], "relevance":"Unhedged PHP feeder FX exposure"}
+    {"id":"policy","name":"Policy, real yields & liquidity","values":[4.0,3.9,3.7],"relevance":"Fed 70% / BSP 30%; valuation, PHP carry & liquidity"},
+    {"id":"technology","name":"Technology earnings & AI capex","values":[4.6,4.4,4.2],"relevance":"Global Technology growth engine"},
+    {"id":"valuation","name":"Nasdaq valuation dispersion","values":[3.3,3.1,3.0],"relevance":"Equity drawdown & entry risk"},
+    {"id":"volatility","name":"Option-implied volatility","values":[4.1,3.8,3.6],"relevance":"Income ETF premium opportunity"},
+    {"id":"fx","name":"USD/PHP direction","values":[3.9,3.8,3.7],"relevance":"Unhedged PHP feeder FX exposure"}
   ],
   "scenarios": [
-    {"rate":"3.00–3.99", "label":"Cautious", "cap":20, "dd":18.6, "allocation":[45,30,25]},
-    {"rate":"4.00–4.99", "label":"Active model", "cap":25, "dd":24.4, "allocation":[20,45,35]},
-    {"rate":"5.00", "label":"Maximum bullish", "cap":30, "dd":29.7, "allocation":[7,60,33]}
+    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.9,"allocation":[34,36,30]},
+    {"rate":"4.00-4.99","label":"Growth tilt","cap":25,"dd":24.4,"allocation":[20,45,35]},
+    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":29.7,"allocation":[7,60,33]}
   ],
   "slides": [
-    {"tag":"FUND · PHP LIQUIDITY", "title":"ATRAM Peso Money Market Fund", "thesis":"Liquidity and short-duration ballast. This is the portfolio’s drawdown and funding sleeve—not its long-run growth engine.", "facts":[["Observed one-year return","4.05%","Official KIIDS snapshot: Aug 2025"],["Trust fee snapshot","0.52%","Official KIIDS snapshot: Oct 2024"],["10Y net CAGR","Not observable","Use a forward model; do not backfill"],["Composite drawdown","0.24%","60% historical proxy + 40% forward median"]], "source":"https://www.atram.com.ph/", "sourceText":"ATRAM official fund disclosures"},
-    {"tag":"FEEDER FUND · GLOBAL EQUITY", "title":"ATRAM Global Technology Feeder Fund", "thesis":"The concentrated growth sleeve. It feeds Fidelity’s Global Technology Fund; sector and FX concentration mean it is constrained by the portfolio’s risk budget.", "facts":[["Underlying target","Fidelity Global Technology","Fund disclosure"],["Trust fee snapshot","0.95% p.a.","ATRAM official primer (2020; revalidate)"],["10Y net CAGR","Forecast only","Feeder launched Apr 2018—no 10Y observed record"],["Composite drawdown","39.2%","Historical proxy + forward median"]], "source":"https://www.atram.com.ph/", "sourceText":"ATRAM official fund disclosures"},
-    {"tag":"FEEDER FUND / ETF · NASDAQ INCOME", "title":"ATRAM Nasdaq Equity Income Feeder Fund", "thesis":"The income sleeve feeds JPMorgan’s Nasdaq Equity Premium Income Active UCITS ETF. Covered calls may exchange some upside for option premium income; payouts are not guaranteed.", "facts":[["Target ETF","JPM Nasdaq Equity Premium Income Active UCITS ETF","Official KIIDS"],["Trust fee snapshot","1.46% p.a.","Official KIIDS: Apr 2026"],["10Y net CAGR","Forecast only","Fund launched Jan 2026"],["Composite drawdown","22.4%","Historical proxy + forward median"]], "source":"https://am.jpmorgan.com/", "sourceText":"J.P. Morgan Asset Management"}
+    {"tag":"FUND / PHP LIQUIDITY","title":"ATRAM Peso Money Market Fund","thesis":"Liquidity and short-duration ballast. This is the portfolio's drawdown and funding sleeve, not its long-run growth engine.","facts":[["Observed one-year return","4.05%","Official KIIDS snapshot: Aug 2025"],["Trust fee snapshot","0.52%","Official KIIDS snapshot: Oct 2024"],["10Y net CAGR","Not observable","Use a forward model; do not backfill"],["Composite drawdown","0.24%","60% history + 40% forward median"]],"source":"https://www.atram.com.ph/","sourceText":"ATRAM official fund disclosures"},
+    {"tag":"FEEDER FUND / GLOBAL EQUITY","title":"ATRAM Global Technology Feeder Fund","thesis":"The concentrated growth sleeve. It feeds Fidelity's Global Technology Fund; sector and FX concentration mean it is constrained by the portfolio risk budget.","facts":[["Underlying target","Fidelity Global Technology","Fund disclosure"],["Trust fee snapshot","0.95% p.a.","ATRAM official primer; daily revalidation"],["10Y net CAGR","Forecast only","Feeder launched Apr 2018; no 10Y observed record"],["Composite drawdown","39.20%","60% history + 40% forward median"]],"source":"https://www.atram.com.ph/","sourceText":"ATRAM official fund disclosures"},
+    {"tag":"FEEDER FUND / ETF / NASDAQ INCOME","title":"ATRAM Nasdaq Equity Income Feeder Fund","thesis":"The income sleeve feeds JPMorgan's Nasdaq Equity Premium Income Active UCITS ETF. Covered calls may exchange some upside for option premium income; payouts are not guaranteed.","facts":[["Target ETF","JPM Nasdaq Equity Premium Income Active UCITS ETF","Official KIIDS"],["Trust fee snapshot","1.46% p.a.","Official KIIDS: Apr 2026"],["10Y net CAGR","Forecast only","Fund launched Jan 2026"],["Composite drawdown","22.40%","60% target-ETF proxy + 40% forward median"]],"source":"https://am.jpmorgan.com/","sourceText":"J.P. Morgan Asset Management"}
   ],
   "monitor": [
-    {"holding":"ATRAM Peso Money Market", "score":92, "status":"Relevant — liquidity buffer", "trigger":"Not relevant if cash yield, after current verified fees, is persistently below the client’s required liquidity return for 2 quarterly reviews; or fund mandate/duration meaningfully changes.", "cadence":"Daily source check; monthly rate/holdings review; quarterly mandate review"},
-    {"holding":"ATRAM Global Technology Feeder", "score":78, "status":"Relevant — constrained growth engine", "trigger":"Not relevant if its target-fund mandate materially drifts from global technology; all-in verified fees erode the approved forward return; or 12-month earnings/capex signal stays <3.0 and composite drawdown breaches the active cap.", "cadence":"Daily source check; monthly macro/fee review; quarterly target-fund and overlap review"},
-    {"holding":"ATRAM Nasdaq Equity Income Feeder", "score":74, "status":"Relevant — income / volatility sleeve", "trigger":"Not relevant if covered-call implementation or distribution policy changes materially; option-premium conditions stay weak while upside participation is persistently sacrificed; or all-in verified fees defeat its forward median case.", "cadence":"Daily source check; monthly distribution/volatility review; quarterly ETF prospectus review"}
+    {"holding":"ATRAM Peso Money Market","score":92,"status":"Relevant - liquidity buffer","trigger":"Not relevant if cash yield, after current verified fees, is persistently below the required liquidity return for 2 quarterly reviews; or fund mandate/duration changes materially.","cadence":"Daily source check; monthly rate/holdings review; quarterly mandate review"},
+    {"holding":"ATRAM Global Technology Feeder","score":78,"status":"Relevant - constrained growth engine","trigger":"Not relevant if its target-fund mandate drifts materially; all-in verified fees erode the approved forward return; or 12-month earnings/capex stays <3.0 and composite DD breaches the active cap.","cadence":"Daily source check; monthly macro/fee review; quarterly target-fund and overlap review"},
+    {"holding":"ATRAM Nasdaq Equity Income Feeder","score":74,"status":"Relevant - income / volatility sleeve","trigger":"Not relevant if covered-call implementation or distribution policy changes materially; option-premium conditions stay weak while upside participation is sacrificed; or verified fees defeat the forward median case.","cadence":"Daily source check; monthly distribution/volatility review; quarterly ETF prospectus review"}
   ],
   "sources": [
-    {"name":"ATRAM fund disclosures", "detail":"Primary source for fund mandate, fees, dealing terms and KIIDS. Daily link validation; values must be refreshed only from the newest official document.", "url":"https://www.atram.com.ph/"},
-    {"name":"Bangko Sentral ng Pilipinas", "detail":"Primary Philippine policy and macro source for liquidity, inflation and FX context.", "url":"https://www.bsp.gov.ph/"},
-    {"name":"J.P. Morgan Asset Management", "detail":"Primary source for the Nasdaq Equity Premium Income Active UCITS ETF target strategy.", "url":"https://am.jpmorgan.com/"},
-    {"name":"Fidelity International", "detail":"Primary source for the Global Technology Fund target strategy and its current literature.", "url":"https://www.fidelityinternational.com/"},
-    {"name":"IMF Data", "detail":"Primary multilateral macro source used in the research review protocol.", "url":"https://www.imf.org/en/Data"},
-    {"name":"GitHub Actions audit log", "detail":"Daily automated source availability, data-shape, arithmetic, simulation and build checks.", "url":"https://github.com/f1fad-hue/GPTAtram/actions"}
+    {"name":"ATRAM fund disclosures","detail":"Primary source for fund mandate, fees, dealing terms and KIIDS. Daily link validation; values must be refreshed only from the newest official document.","url":"https://www.atram.com.ph/"},
+    {"name":"Bangko Sentral ng Pilipinas","detail":"Primary Philippine policy and macro source for liquidity, inflation and FX context.","url":"https://www.bsp.gov.ph/"},
+    {"name":"Federal Reserve","detail":"Primary US policy and liquidity source for the global equity sleeves.","url":"https://www.federalreserve.gov/"},
+    {"name":"J.P. Morgan Asset Management","detail":"Primary source for the Nasdaq Equity Premium Income Active UCITS ETF target strategy.","url":"https://am.jpmorgan.com/"},
+    {"name":"Fidelity International","detail":"Primary source for the Global Technology Fund target strategy and current literature.","url":"https://www.fidelityinternational.com/"},
+    {"name":"GitHub Actions audit log","detail":"Daily source availability, claim coverage, data-shape, arithmetic, simulation and build checks.","url":"https://github.com/f1fad-hue/GPTAtram/actions"}
   ]
 }
