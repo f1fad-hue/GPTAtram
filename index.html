@@ -6,22 +6,7 @@
     <meta name="theme-color" content="#f5f7fb" />
     <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
     <title>ATRAM Growth Compass</title>
-    <link rel="stylesheet" href="styles.css" />
-    <style>
-      .tabbar{position:sticky;top:0;z-index:5;display:flex;gap:7px;overflow-x:auto;padding:10px 0;background:linear-gradient(180deg,var(--bg) 78%,transparent);margin:2px 0 4px}
-      .tab{flex:0 0 auto;border:1px solid var(--line);background:#0a2034;color:var(--muted);border-radius:999px;padding:.48rem .82rem;font:700 .78rem/1 Inter,system-ui,sans-serif;cursor:pointer}
-      .tab.active{background:var(--lime);border-color:var(--lime);color:#082033}
-      [hidden]{display:none!important}
-      .dd-math{padding:25px;margin-top:14px}.dd-math h2{font-size:1.55rem}.dd-math h2 span{color:var(--muted);font-size:.9rem;font-weight:500}.dd-math>p:not(.eyebrow){color:var(--muted);font-size:.88rem}.dd-math table{border-collapse:collapse;width:100%;min-width:650px}.dd-math th,.dd-math td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:.83rem}.dd-math th{font-size:.7rem;letter-spacing:.05em;color:var(--muted)}
-      .donut-label{position:absolute;z-index:2;transform:translate(-50%,-50%);color:#082033;font-size:.72rem;font-weight:850;line-height:1;letter-spacing:-.02em;text-shadow:0 1px 1px #fff8;pointer-events:none}.donut.large .donut-label{font-size:.82rem}
-      :root{--ink:#17324d;--muted:#64748b;--bg:#f5f7fb;--panel:#fff;--line:#dbe4ee;--lime:#79c83d;--cyan:#0989a7;--orange:#e58b22}
-      body{background:linear-gradient(155deg,#eef8ff 0,#f7f9fc 42%,#f5f7fb 100%);color:var(--ink)}
-      .brand{color:#17324d}.brand span{color:#61a932}.pill,.badges span{background:#fff;color:#52667b;border-color:#d5e0ea}.panel,.metric{background:#fff;border-color:#dbe4ee;box-shadow:0 10px 28px #31577812}.score-card{background:#eef8ff;border-color:#bcddec}.score-card p,.score-card span,.score-card small,.metric span,.metric small,.section-heading>p,.lede,.rationale p,.rationale li,.caption,.slide p,.sim-output,.simulation details,#monitor-table td,.report>p:not(.eyebrow),footer{color:#62748a}.score-card strong{color:#4d9d24}.meter{background:#d7e8f0}.donut:after{background:#fff}.fact{background:#f8fbfd;border-color:#dbe4ee}.simulation canvas{background:#fbfdff;border-color:#dbe4ee}.tabbar{background:linear-gradient(180deg,var(--bg) 78%,transparent)}.tab{background:#fff;color:#587087;border-color:#dbe4ee}.tab.active{background:#17324d;border-color:#17324d;color:#fff}.slide-controls button{background:#e8f2f7;border-color:#c9dde8;color:#17324d}.source{background:#fbfdff;border-color:#dbe4ee}.disclaimer{border-left-color:#e58b22}
-      body.dark{--ink:#eaf2ff;--muted:#9bb0ca;--bg:#061523;--panel:#0a2034;--line:#173652;--lime:#b9f64c;--cyan:#47d8e8;--orange:#ffad4d;background:radial-gradient(900px 420px at 80% -10%,#12446a55,transparent),var(--bg)}
-      body.dark .brand{color:#fff}body.dark .pill,body.dark .badges span,body.dark .panel,body.dark .metric{background:#0a2034;border-color:#173652}body.dark .score-card{background:#071827;border-color:#225274}body.dark .donut:after{background:#092037}body.dark .fact{background:#071a2a;border-color:#173652}body.dark .simulation canvas{background:#061727;border-color:#173652}body.dark .tab{background:#0a2034;color:#9bb0ca;border-color:#173652}body.dark .tab.active{background:var(--lime);border-color:var(--lime);color:#082033}body.dark .source{background:#071a2a;border-color:#173652}
-      #theme-toggle{font:700 .76rem/1 Inter,system-ui,sans-serif;cursor:pointer}
-      @media(max-width:720px){.tab{padding:.45rem .72rem}.metrics{margin-top:8px}}
-    </style>
+    <link rel="stylesheet" href="styles.css?v=20260813-1" />
   </head>
   <body>
     <header class="topbar wrap">
@@ -33,15 +18,15 @@
       <section class="hero panel">
         <div>
           <p class="eyebrow">10-YEAR RESEARCH MODEL · PHP INVESTOR VIEW</p>
-          <h1>Maximum growth,<br><em>with a hard drawdown guardrail.</em></h1>
-          <p class="lede">Three ATRAM funds. Maximum-growth model. Hard drawdown limit.</p>
-          <div class="badges"><span>Daily validation</span><span>10-year horizon</span><span>PHP perspective</span></div>
+          <h1>Maximum growth,<br><em>inside a hard DD cap.</em></h1>
+          <p class="lede">All three required ATRAM funds. Fee-adjusted forecast. Daily verification.</p>
+          <div class="badges"><span>10 macro drivers</span><span>10-year horizon</span><span>5% allocation grid</span></div>
         </div>
         <div class="score-card">
           <p>Optimized portfolio rate</p>
-          <strong id="portfolio-rate">4.42</strong><span>/ 5 · bullish</span>
-          <div class="meter"><i style="width:88.4%"></i></div>
-          <small id="rate-detail">3–12m macro composite · 25% drawdown cap</small>
+          <strong id="portfolio-rate">3.85</strong><span id="rating-label">/ 5 · constructive</span>
+          <div class="meter"><i style="width:77%"></i></div>
+          <small id="rate-detail">3-12m macro composite · 20% DD cap</small>
         </div>
       </section>
 
@@ -54,40 +39,40 @@
       </nav>
 
       <section class="metrics" aria-label="Portfolio headline metrics">
-        <article class="metric"><span>Optimized allocation</span><strong id="allocation-total">100%</strong><small>Three required funds</small></article>
-        <article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">9.2%</strong><small>Model output, not a promise</small></article>
-        <article class="metric"><span>Composite drawdown</span><strong id="drawdown">24.4%</strong><small>Within the 25% rating cap</small></article>
-        <article class="metric"><span>Simulation paths</span><strong>10,000</strong><small>Monthly, 10 years</small></article>
+        <article class="metric"><span>Required funds</span><strong id="allocation-total">3 / 3</strong><small>All included</small></article>
+        <article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">7.7%</strong><small>After stated fund fees</small></article>
+        <article class="metric"><span>Composite DD</span><strong id="drawdown">19.9%</strong><small>Below the 20% cap</small></article>
+        <article class="metric"><span>Monte Carlo</span><strong id="path-count">10,000</strong><small>120 monthly steps</small></article>
       </section>
 
-      <section class="section-heading"><div><p class="eyebrow">THE ANSWER</p><h2>Constrained maximum-growth allocation</h2></div><p>Risk rating 4.42 maps to the 4.00–4.99 band; the drawdown ceiling is therefore <b>25%</b>.</p></section>
+      <section class="section-heading"><div><p class="eyebrow">THE ANSWER</p><h2>Constrained maximum-growth allocation</h2></div><p id="allocation-constraint">Rate 3.85 selects a 20% DD cap.</p></section>
       <section class="allocation-grid">
         <article class="panel allocation-card"><div class="donut large" id="active-donut" aria-label="Current allocation donut"></div><div id="active-allocation" class="allocation-legend"></div></article>
-        <article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Growth engine, protected by liquidity.</h3><p id="rationale-copy">The allocation favours global technology exposure, then uses the income-oriented Nasdaq sleeve and short-duration PHP liquidity to keep the composite stress estimate under its non-negotiable 25% limit.</p><ul><li>Concentration is intentional but capped.</li><li>Income sleeve can cushion a range-bound, volatile Nasdaq regime.</li><li>Money-market sleeve preserves optionality and PHP liquidity.</li></ul></article>
+        <article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Maximum forecast growth inside the cap.</h3><p id="rationale-copy">The optimizer uses all three funds and selects the highest fee-adjusted CAGR on the allowed 5% grid.</p><ul><li>Nasdaq income leads the current return-to-DD tradeoff.</li><li>Global technology preserves concentrated growth exposure.</li><li>Money market supplies liquidity and risk capacity.</li></ul></article>
       </section>
       <section class="panel dd-math" id="dd-math" aria-label="Drawdown calculation"></section>
 
-      <section class="section-heading"><div><p class="eyebrow">MACRO SENSITIVITY</p><h2>Only drivers that change these allocations</h2></div><p>Scores are model signals from 1 (bearish) to 5 (bullish), not market forecasts.</p></section>
-      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap" id="heatmap"><thead><tr><th>Driver</th><th>3 months</th><th>6 months</th><th>12 months</th><th>Weight</th><th>Allocation link / source</th></tr></thead><tbody></tbody></table></div><p class="caption">Composite methodology: 45% 3-month, 35% 6-month, 20% 12-month. Ten non-overlapping drivers maximize portfolio coverage without double-counting broad equity, rates, currency, or volatility signals. Every retained driver must be capable of changing at least one of the three allocations.</p></section>
+      <section class="section-heading"><div><p class="eyebrow">MACRO SENSITIVITY</p><h2>Only drivers that can change allocations</h2></div><p>Scores run from 1 bearish to 5 bullish; decimals allowed.</p></section>
+      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap" id="heatmap"><thead><tr><th>Driver</th><th>3m</th><th>6m</th><th>12m</th><th>Weight</th><th>Allocation link</th></tr></thead><tbody></tbody></table></div><p class="caption">Time weights: 45% 3-month, 35% 6-month, 20% 12-month. Ten non-overlapping drivers maximize portfolio coverage without double-counting rates, growth, currency, valuation or volatility.</p></section>
 
-      <section class="section-heading"><div><p class="eyebrow">SCENARIO MAP</p><h2>Allocation by sentiment band</h2></div><p>Donuts show the constrained optimizer’s outputs, rather than an invitation to chase a score.</p></section>
+      <section class="section-heading"><div><p class="eyebrow">RATES 3 / 4 / 5</p><h2>Optimized allocation scenarios</h2></div><p>Each donut maximizes the same fee-adjusted CAGR objective under its DD cap.</p></section>
       <section class="scenario-grid" id="scenario-grid"></section>
 
-      <section class="section-heading"><div><p class="eyebrow">FUND / ETF / EQUITY LOOK-THROUGH</p><h2>Research slides</h2></div><p>Swipe or use the controls. “Observed” never means “forecast.”</p></section>
+      <section class="section-heading"><div><p class="eyebrow">FUND / ETF LOOK-THROUGH</p><h2>Fee and DD slides</h2></div><p>Official facts are separated from 10-year model assumptions.</p></section>
       <section class="slides panel">
         <div id="slides-track" class="slides-track"></div>
         <div class="slide-controls"><button id="prev" aria-label="Previous slide">←</button><span id="slide-counter">1 / 3</span><button id="next" aria-label="Next slide">→</button></div>
       </section>
 
-      <section class="section-heading"><div><p class="eyebrow">MONTE CARLO</p><h2>10-year range of outcomes</h2></div><p>10,000 deterministic-reproducible paths using the net forecast, estimated volatility, and 12 monthly steps/year.</p></section>
-      <section class="panel simulation"><canvas id="simulation-chart" width="960" height="360" aria-label="Monte Carlo terminal portfolio value distribution"></canvas><div class="sim-output" id="sim-output"></div><details><summary>Math & model limitations</summary><p>Each path compounds monthly lognormal returns: <code>V(t+1)=V(t)×exp((μ−σ²/2)/12 + σ×Z/√12)</code>. μ is the stated portfolio net-CAGR assumption and σ is the portfolio volatility assumption. The model is educational: it does not predict returns, fully capture tails, taxes, dealing spreads, FX moves, cash distributions, or future fee changes.</p></details></section>
+      <section class="section-heading"><div><p class="eyebrow">MONTE CARLO</p><h2>10-year outcome range</h2></div><p>10,000 reproducible paths using the net CAGR forecast and model volatility.</p></section>
+      <section class="panel simulation"><canvas id="simulation-chart" width="960" height="360" aria-label="Monte Carlo terminal portfolio value distribution"></canvas><div class="sim-output" id="sim-output"></div><details><summary>Math and limitations</summary><p>Each path compounds monthly lognormal returns: <code>V(t+1)=V(t)×exp((μ−σ²/2)/12 + σ×Z/√12)</code>. This model does not predict returns or fully capture tails, tax, spreads, FX, cash distributions or future fee changes.</p></details></section>
 
-      <section class="section-heading"><div><p class="eyebrow">RELEVANCE MONITOR</p><h2>When each holding stops earning a place</h2></div><p>Not-relevant triggers are pre-committed conditions to investigate—not automatic sell orders.</p></section>
-      <section class="panel monitor"><div class="scroll"><table id="monitor-table"><thead><tr><th>Holding</th><th>Current relevance</th><th>Not-relevant trigger</th><th>Cadence</th></tr></thead><tbody></tbody></table></div></section>
+      <section class="section-heading"><div><p class="eyebrow">10-YEAR RELEVANCE MONITOR</p><h2>When each holding stops earning a place</h2></div><p>Triggers initiate investigation; they are not automatic sell orders.</p></section>
+      <section class="panel monitor"><div class="scroll"><table id="monitor-table"><thead><tr><th>Fund / ETF</th><th>Status</th><th>Not-relevant trigger</th><th>Cadence</th></tr></thead><tbody></tbody></table></div></section>
 
-      <section class="panel report" id="sources"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion & source ledger</h2><p>The active model rate is <b>4.42 / 5 (bullish)</b>, producing the rate-4 constrained allocation. Its expected 10-year net CAGR is a scenario estimate, not an investment recommendation. The primary limitation is concentration: both growth sleeves are technology-sensitive and may move together in a risk-off event. Review suitability, currency exposure, tax, liquidity, and the newest official KIIDS before transacting.</p><div id="source-list" class="source-list"></div><p class="disclaimer">Educational research interface only. UITFs are not deposits and are not insured by PDIC. Historical results do not guarantee future results. The daily workflow validates sources, model arithmetic, and build health; it cannot replace investment due diligence or turn a forecast into a fact.</p></section>
+      <section class="panel report" id="sources"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion and sources</h2><p id="report-summary">The active model uses a rate-constrained optimizer. Forecasts are model assumptions, not promises or observed facts.</p><div id="source-list" class="source-list"></div><p class="disclaimer">Educational research only; not investment advice. UITFs are not deposits and are not insured by PDIC. Historical results do not guarantee future results. Verify the latest official ATRAM disclosure and suitability before investing.</p></section>
     </main>
-    <footer class="wrap"><span>Last model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Daily cloud verification: loading</span></footer>
-    <script src="app.js?v=20260812-4"></script>
+    <footer class="wrap"><span>Model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Daily cloud verification: loading</span></footer>
+    <script src="app.js?v=20260813-1"></script>
   </body>
 </html>

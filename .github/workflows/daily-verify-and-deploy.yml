@@ -14,26 +14,6 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
-  pages-status:
-    runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.pages.outputs.enabled }}
-    steps:
-      - id: pages
-        name: Check whether GitHub Pages is enabled
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              await github.rest.repos.getPages({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              core.setOutput('enabled', 'true');
-            } catch (error) {
-              core.warning('GitHub Pages is not enabled. Enable it once in repository Settings → Pages, select GitHub Actions, then the next scheduled run will deploy automatically.');
-              core.setOutput('enabled', 'false');
-            }
   verify:
     runs-on: ubuntu-latest
     steps:
@@ -53,7 +33,10 @@ jobs:
           git diff --check
           test -f index.html && test -f app.js && test -f styles.css
           grep -q 'Monte Carlo' index.html
-          grep -q 'Fed policy, US real yields & liquidity' data/portfolio.json
+          grep -q 'Fed policy, US real yields and liquidity' data/portfolio.json
+          grep -q 'ATRAM Peso Money Market Fund - D PHP' data/portfolio.json
+          grep -q 'ATRAM Global Technology Feeder Fund - D PHP' data/portfolio.json
+          grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - D PHP' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,8 +46,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
   deploy:
-    needs: [pages-status, verify]
-    if: needs.pages-status.outputs.enabled == 'true'
+    needs: verify
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -1,7 +1,7 @@
 {
-  "policy": "Only first-party fund-manager, central-bank, regulator, or multilateral sources may support factual claims. Model outputs are labelled as model outputs and never treated as external facts.",
+  "policy": "Only first-party fund-manager, central-bank, regulator, statistical-agency, multilateral, exchange, or index-administrator sources may support factual claims. Model outputs are labelled as model outputs and never treated as external facts.",
   "sources": [
-    {"id":"atram","name":"ATRAM official disclosures","authority":"Fund manager","url":"https://www.atram.com.ph/","domain":"atram.com.ph"},
+    {"id":"atram","name":"ATRAM official fund portal","authority":"Fund manager","url":"https://www.atram.com.ph/","domain":"atram.com.ph"},
     {"id":"bsp","name":"Bangko Sentral ng Pilipinas","authority":"Philippine central bank","url":"https://www.bsp.gov.ph/","domain":"bsp.gov.ph"},
     {"id":"fed","name":"Federal Reserve FOMC statement","authority":"US central bank","url":"https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm","domain":"federalreserve.gov"},
     {"id":"realYields","name":"10-year Treasury inflation-indexed yield","authority":"Federal Reserve Economic Data","url":"https://fred.stlouisfed.org/series/DFII10","domain":"fred.stlouisfed.org"},

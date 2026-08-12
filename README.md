@@ -1,20 +1,26 @@
 # ATRAM Growth Compass
 
-Mobile-first, static portfolio-research dashboard for the three specified ATRAM funds.
+Mobile-first, static research dashboard for three required PHP UITF classes:
 
-## Guardrails
+- ATRAM Peso Money Market Fund - D PHP
+- ATRAM Global Technology Feeder Fund - D PHP
+- ATRAM Nasdaq Equity Income Feeder Fund - D PHP
 
-- The 4.42/5 active sentiment score maps to a 25% composite-drawdown cap.
-- The net-CAGR values are model scenarios, never historical claims or investment promises.
-- A fund with less than ten years of history is labelled as such. The Nasdaq fund launched in 2026, so it cannot have a 10-year observed CAGR.
-- `npm test` validates allocation totals, score ranges, drawdown caps, relevance scores, source availability, and static build requirements.
+## Model guardrails
 
-## Daily automation
+- Macro sentiment: 1 bearish to 5 bullish, using ten non-overlapping portfolio drivers across 3, 6 and 12 months.
+- Drawdown: exactly 60% historical/proxy DD plus 40% forward-looking 10-year median DD.
+- Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
+- Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
+- Net CAGR: gross 10-year scenario minus the stated ATRAM wrapper fee and target-fund/ETF fee.
+- Monte Carlo: 10,000 reproducible monthly-lognormal paths over 120 months.
 
-GitHub Actions runs daily at 01:17 UTC, after each push, or manually. It retrieves only the sources in `data/source-registry.json`, verifies every factual claim has an approved authoritative citation in `data/claim-registry.json`, validates model guardrails, checks code syntax/static files, stores an audit report for 90 days, then redeploys GitHub Pages.
+Forecasts, proxy drawdowns, correlations and forward medians are model assumptions, not promises or observed facts.
 
-The automation never silently invents, overwrites, or treats a forecast as factual data. A new factual value must be entered only after the latest official disclosure is reviewed; the daily audit then validates its approved source and evidence trail.
+## Verification and publishing
 
-The dashboard is immediately usable at `https://cdn.jsdelivr.net/gh/f1fad-hue/GPTAtram@main/index.html`.
+`npm test` validates authoritative-source retrieval, claim coverage, fees, optimizer optimality, allocation totals, macro arithmetic, DD formulas/caps, Monte Carlo configuration, monitoring records and code syntax.
 
-For the first-party GitHub Pages URL, enable **Settings → Pages → Build and deployment → GitHub Actions** once. The next daily workflow run will then deploy `https://f1fad-hue.github.io/GPTAtram/` automatically.
+GitHub Actions runs after each push, manually, and daily at 01:17 UTC (09:17 Manila). Failed verification blocks deployment and opens a GitHub issue. Successful verification writes a live monitoring timestamp and deploys GitHub Pages.
+
+Live HTTPS site: `https://f1fad-hue.github.io/GPTAtram/`

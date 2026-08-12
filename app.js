@@ -1,5 +1,5 @@
-const $ = (s) => document.querySelector(s);
-const fmt = (v, digits = 1) => `${Number(v).toFixed(digits)}%`;
+const $ = (selector) => document.querySelector(selector);
+const fmt = (value, digits = 1) => `${Number(value).toFixed(digits)}%`;
 
 const themeToggle = $('#theme-toggle');
 themeToggle.addEventListener('click', () => {
@@ -8,94 +8,122 @@ themeToggle.addEventListener('click', () => {
   themeToggle.setAttribute('aria-pressed', String(dark));
 });
 
-const heading = (text) => [...document.querySelectorAll('.section-heading')].find(node => node.textContent.includes(text));
+const heading = (text) => [...document.querySelectorAll('.section-heading')].find((node) => node.textContent.includes(text));
 const tabGroups = {
   overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid'), $('#dd-math')],
-  macro: [heading('Only drivers that change these allocations'), $('.heatmap-wrap'), heading('Allocation by sentiment band'), $('#scenario-grid')],
-  research: [heading('Research slides'), $('.slides'), heading('10-year range of outcomes'), $('.simulation')],
+  macro: [heading('Only drivers that can change allocations'), $('.heatmap-wrap'), heading('Optimized allocation scenarios'), $('#scenario-grid')],
+  research: [heading('Fee and DD slides'), $('.slides'), heading('10-year outcome range'), $('.simulation')],
   monitor: [heading('When each holding stops earning a place'), $('.monitor')],
   sources: [$('.report')]
 };
 const tabs = [...document.querySelectorAll('[data-tab]')];
 function selectTab(name) {
-  Object.entries(tabGroups).forEach(([group, nodes]) => nodes.filter(Boolean).forEach(node => { node.hidden = group !== name; }));
-  tabs.forEach(tab => { const active = tab.dataset.tab === name; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)); });
+  Object.entries(tabGroups).forEach(([group, nodes]) => nodes.filter(Boolean).forEach((node) => { node.hidden = group !== name; }));
+  tabs.forEach((tab) => {
+    const active = tab.dataset.tab === name;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', String(active));
+  });
   history.replaceState(null, '', `#${name}`);
 }
-tabs.forEach(tab => tab.addEventListener('click', () => selectTab(tab.dataset.tab)));
+tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.tab)));
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260812-4', { cache: 'no-store' }).then(r => r.json()).then(data => {
-  const p = data.portfolio;
+fetch('data/portfolio.json?v=20260813-1', { cache: 'no-store' }).then((response) => {
+  if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
+  return response.json();
+}).then((data) => {
+  const portfolio = data.portfolio;
   const macroRate = calculateMacroRate(data);
-  const portfolioDd = calculatePortfolioDrawdown(data);
+  const portfolioDd = calculatePortfolioDrawdown(data, portfolio.allocation.map((item) => item.weight));
+  const calculatedCagr = calculatePortfolioCagr(data, portfolio.allocation.map((item) => item.weight));
+
   $('#portfolio-rate').textContent = macroRate.toFixed(2);
+  $('#rating-label').textContent = `/ 5 · ${portfolio.ratingLabel}`;
   $('.meter i').style.width = `${macroRate / 5 * 100}%`;
-  $('.metrics .metric:nth-child(3) small').textContent = `Within the active ${p.drawdownCap}% rating cap`;
-  heading('Constrained maximum-growth allocation').querySelector(':scope > p').innerHTML = `Macro score <b>${macroRate.toFixed(2)} / 5</b> maps to the <b>${p.rateBand}</b> band; the drawdown ceiling is therefore <b>${p.drawdownCap}%</b>.`;
-  $('#rationale-copy').textContent = `The allocation favours global technology exposure, then uses the income-oriented Nasdaq sleeve and short-duration PHP liquidity to keep the ${portfolioDd.toFixed(2)}% composite estimate within its non-negotiable ${p.drawdownCap}% limit.`;
-  $('#sources > p:nth-of-type(2)').innerHTML = `The active model rate is <b>${macroRate.toFixed(2)} / 5</b>, producing the ${p.rateBand} constrained allocation and a ${portfolioDd.toFixed(2)}% composite drawdown estimate. Its expected 10-year net CAGR is a scenario estimate, not an investment recommendation. The primary limitation is concentration: both growth sleeves are technology-sensitive and may move together in a risk-off event. Review suitability, currency exposure, tax, liquidity, and the newest official KIIDS before transacting.`;
-  $('#rate-detail').textContent = `3–12m macro composite · ${p.drawdownCap}% drawdown cap`;
-  $('#allocation-total').textContent = `${p.allocation.reduce((a,x) => a + x.weight, 0)}%`;
-  $('#cagr-forecast').textContent = fmt(p.netCagrForecast);
-  $('#drawdown').textContent = fmt(portfolioDd);
-  $('#as-of').textContent = new Date(data.asOf + 'T00:00:00').toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'});
-  renderDonut($('#active-donut'), p.allocation);
-  $('#active-allocation').innerHTML = p.allocation.map(x => `<div class="legend-row"><span><i class="dot" style="background:${x.color}"></i>${x.name}</span><b>${x.weight}%</b></div>`).join('');
+  $('#rate-detail').textContent = `3-12m macro composite · ${portfolio.drawdownCap}% DD cap`;
+  $('#allocation-total').textContent = `${portfolio.allocation.length} / 3`;
+  $('#cagr-forecast').textContent = fmt(calculatedCagr, 2);
+  $('#drawdown').textContent = fmt(portfolioDd, 2);
+  $('#path-count').textContent = data.monteCarlo.paths.toLocaleString();
+  $('#allocation-constraint').innerHTML = `Rate <b>${macroRate.toFixed(2)}</b> selects the <b>${portfolio.rateBand}</b> band and <b>${portfolio.drawdownCap}%</b> DD cap.`;
+  $('#rationale-copy').textContent = `The 5%-grid optimizer includes all three required funds and selects the highest net-CAGR mix: ${calculatedCagr.toFixed(2)}% forecast CAGR with ${portfolioDd.toFixed(2)}% composite DD.`;
+  $('#report-summary').innerHTML = `The active rate is <b>${macroRate.toFixed(2)} / 5 (${portfolio.ratingLabel})</b>. The optimized allocation forecasts <b>${calculatedCagr.toFixed(2)}% net CAGR</b> and <b>${portfolioDd.toFixed(2)}% composite DD</b>. Forecasts and forward DD values are model assumptions, not promises or observed facts.`;
+  $('#as-of').textContent = new Date(`${data.asOf}T00:00:00`).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+
+  renderDonut($('#active-donut'), portfolio.allocation);
+  $('#active-allocation').innerHTML = portfolio.allocation.map((item) => `<div class="legend-row"><span><i class="dot" style="background:${item.color}"></i>${item.name}</span><b>${item.weight}%</b></div>`).join('');
   renderDrawdownMath(data, macroRate, portfolioDd);
 
-  const heat = $('#heatmap tbody');
-  heat.innerHTML = data.drivers.map(d => `<tr><td>${d.name}</td>${d.values.map(v => `<td><div class="heat" style="background:${heatColor(v)}">${v.toFixed(1)}</div></td>`).join('')}<td><b>${(data.macroModel.driverWeights[d.id] * 100).toFixed(0)}%</b></td><td>${d.relevance}</td></tr>`).join('');
-  const colors = p.allocation.map(x => x.color);
-  $('#scenario-grid').innerHTML = data.scenarios.map((s,i) => `<article class="scenario panel"><header><div><p class="eyebrow">RATE ${s.rate}</p><h3>${s.label}</h3></div><b>${s.cap}% cap</b></header><div class="donut" data-label="${s.dd}%\A composite DD"></div><p>Money ${s.allocation[0]}% · Tech ${s.allocation[1]}% · Nasdaq income ${s.allocation[2]}%</p></article>`).join('');
-  [...document.querySelectorAll('.scenario .donut')].forEach((node,i) => renderDonut(node, data.scenarios[i].allocation.map((weight,j) => ({weight,color:colors[j]}))));
+  $('#heatmap tbody').innerHTML = data.drivers.map((driver) => `<tr><td>${driver.name}</td>${driver.values.map((value) => `<td><div class="heat" style="background:${heatColor(value)}">${value.toFixed(1)}</div></td>`).join('')}<td><b>${(data.macroModel.driverWeights[driver.id] * 100).toFixed(0)}%</b></td><td>${driver.relevance}</td></tr>`).join('');
+
+  const colors = portfolio.allocation.map((item) => item.color);
+  $('#scenario-grid').innerHTML = data.scenarios.map((scenario) => `<article class="scenario panel"><header><div><p class="eyebrow">RATE ${scenario.rate}</p><h3>${scenario.label}</h3></div><b>${scenario.cap}% DD cap</b></header><div class="donut" data-label="${scenario.dd.toFixed(2)}% DD · ${scenario.netCagr.toFixed(2)}% CAGR"></div><p>Money ${scenario.allocation[0]}% · Tech ${scenario.allocation[1]}% · Nasdaq ${scenario.allocation[2]}%</p></article>`).join('');
+  [...document.querySelectorAll('.scenario .donut')].forEach((node, index) => renderDonut(node, data.scenarios[index].allocation.map((weight, colorIndex) => ({ weight, color: colors[colorIndex] }))));
 
   const track = $('#slides-track');
-  track.innerHTML = data.slides.map(s => `<article class="slide"><div><p class="eyebrow">${s.tag}</p><h3>${s.title}</h3><p>${s.thesis}</p><a href="${s.source}" target="_blank" rel="noreferrer">Open primary source ↗</a></div><div class="facts">${s.facts.map(f => `<div class="fact"><span>${f[0]}</span><b>${f[1]}</b><span>${f[2]}</span></div>`).join('')}</div></article>`).join('');
-  let slide = 0; const move = n => { slide=(n+data.slides.length)%data.slides.length; track.style.transform=`translateX(-${slide*100}%)`; $('#slide-counter').textContent=`${slide+1} / ${data.slides.length}`; };
-  $('#next').onclick=()=>move(1); $('#prev').onclick=()=>move(-1);
-  let touchStart=0; track.addEventListener('touchstart',e=>touchStart=e.touches[0].clientX,{passive:true}); track.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-touchStart;if(Math.abs(d)>45)move(d<0?1:-1)},{passive:true});
+  track.innerHTML = data.slides.map((slide) => `<article class="slide"><div><p class="eyebrow">${slide.tag}</p><h3>${slide.title}</h3><p>${slide.thesis}</p><div class="slide-links">${slide.sources.map((source) => `<a href="${source.url}" target="_blank" rel="noreferrer">${source.label} ↗</a>`).join('')}</div></div><div class="facts">${slide.facts.map((fact) => `<div class="fact"><span>${fact[0]}</span><b>${fact[1]}</b><span>${fact[2]}</span></div>`).join('')}</div></article>`).join('');
+  let slideIndex = 0;
+  const move = (delta) => {
+    slideIndex = (slideIndex + delta + data.slides.length) % data.slides.length;
+    track.style.transform = `translateX(-${slideIndex * 100}%)`;
+    $('#slide-counter').textContent = `${slideIndex + 1} / ${data.slides.length}`;
+  };
+  $('#next').onclick = () => move(1);
+  $('#prev').onclick = () => move(-1);
+  let touchStart = 0;
+  track.addEventListener('touchstart', (event) => { touchStart = event.touches[0].clientX; }, { passive:true });
+  track.addEventListener('touchend', (event) => { const distance = event.changedTouches[0].clientX - touchStart; if (Math.abs(distance) > 45) move(distance < 0 ? 1 : -1); }, { passive:true });
 
-  $('#monitor-table tbody').innerHTML = data.monitor.map(m => `<tr><td>${m.holding}<br><span class="score">Relevance ${m.score}/100</span></td><td>${m.status}</td><td>${m.trigger}</td><td>${m.cadence}</td></tr>`).join('');
-  $('#source-list').innerHTML = data.sources.map(s => `<div class="source"><b>${s.name}</b><span>${s.detail}</span><a href="${s.url}" target="_blank" rel="noreferrer">Open source ↗</a></div>`).join('');
-  runMonteCarlo(p.netCagrForecast / 100, p.volatility);
+  $('#monitor-table tbody').innerHTML = data.monitor.map((item) => `<tr><td>${item.holding}<br><span class="score">Relevance ${item.score}/100</span></td><td>${item.status}</td><td>${item.trigger}</td><td>${item.cadence}</td></tr>`).join('');
+  $('#source-list').innerHTML = data.sources.map((source) => `<div class="source"><b>${source.name}</b><span>${source.detail}</span><a href="${source.url}" target="_blank" rel="noreferrer">Open official source ↗</a></div>`).join('');
+  runMonteCarlo(calculatedCagr / 100, portfolio.volatility, data.monteCarlo);
+}).catch((error) => {
+  document.querySelector('main').innerHTML = `<section class="panel report"><h2>Data could not be loaded</h2><p>${error.message}</p></section>`;
 });
 
-fetch('data/monitoring.json', { cache: 'no-store' }).then(response => response.ok ? response.json() : Promise.reject()).then(snapshot => {
-  const checked = new Date(snapshot.verifiedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-  $('#monitoring-status').innerHTML = `Daily cloud verification: <a href="${snapshot.runUrl}" target="_blank" rel="noreferrer">passed ${checked}</a>`;
-}).catch(() => { $('#monitoring-status').textContent = 'Daily cloud verification: awaiting next scheduled run'; });
+fetch('data/monitoring.json', { cache:'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((snapshot) => {
+  const checked = new Date(snapshot.verifiedAt).toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' });
+  $('#monitoring-status').innerHTML = `Daily verification: <a href="${snapshot.runUrl}" target="_blank" rel="noreferrer">passed ${checked}</a>`;
+}).catch(() => { $('#monitoring-status').textContent = 'Daily verification: awaiting next run'; });
 
 function calculateMacroRate(data) {
-  const h = data.macroModel.horizonWeights;
-  return data.drivers.reduce((total, driver) => {
-    const composite = driver.values[0] * h.threeMonth + driver.values[1] * h.sixMonth + driver.values[2] * h.twelveMonth;
-    return total + composite * data.macroModel.driverWeights[driver.id];
-  }, 0);
+  const horizons = data.macroModel.horizonWeights;
+  return data.drivers.reduce((total, driver) => total + (driver.values[0] * horizons.threeMonth + driver.values[1] * horizons.sixMonth + driver.values[2] * horizons.twelveMonth) * data.macroModel.driverWeights[driver.id], 0);
 }
-function calculatePortfolioDrawdown(data) {
+
+function calculateFundComposites(data) {
   const model = data.drawdownModel;
-  const composites = Object.fromEntries(model.funds.map(fund => [fund.id, (fund.historical * model.weights.historical + fund.forwardMedian * model.weights.forwardMedian) / 100]));
-  const weights = Object.fromEntries(data.portfolio.allocation.map(fund => [fund.id, fund.weight / 100]));
-  const ids = Object.keys(weights);
+  return Object.fromEntries(model.funds.map((fund) => [fund.id, (fund.historical * model.weights.historical + fund.forwardMedian * model.weights.forwardMedian) / 100]));
+}
+
+function calculatePortfolioDrawdown(data, allocationValues) {
+  const ids = data.portfolio.allocation.map((item) => item.id);
+  const weights = Object.fromEntries(ids.map((id, index) => [id, allocationValues[index] / 100]));
+  const composites = calculateFundComposites(data);
   let variance = 0;
-  for (const left of ids) for (const right of ids) variance += weights[left] * composites[left] * weights[right] * composites[right] * model.correlations[left][right];
+  for (const left of ids) for (const right of ids) variance += weights[left] * composites[left] * weights[right] * composites[right] * data.drawdownModel.correlations[left][right];
   return Math.sqrt(variance) * 100;
 }
+
+function calculatePortfolioCagr(data, allocationValues) {
+  const netCagr = Object.fromEntries(data.fundModels.map((fund) => [fund.id, fund.netCagr]));
+  return data.portfolio.allocation.reduce((total, item, index) => total + netCagr[item.id] * allocationValues[index] / 100, 0);
+}
+
 function renderDrawdownMath(data, macroRate, portfolioDd) {
-  const model = data.drawdownModel;
-  const rows = model.funds.map(fund => {
-    const composite = fund.historical * model.weights.historical + fund.forwardMedian * model.weights.forwardMedian;
-    const allocation = data.portfolio.allocation.find(item => item.id === fund.id);
-    return `<tr><td>${allocation.name}</td><td>${fund.historical.toFixed(2)}%</td><td>${fund.forwardMedian.toFixed(2)}%</td><td><b>${composite.toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
+  const composites = calculateFundComposites(data);
+  const rows = data.drawdownModel.funds.map((fund) => {
+    const allocation = data.portfolio.allocation.find((item) => item.id === fund.id);
+    return `<tr><td>${allocation.name}</td><td>${fund.historical.toFixed(2)}%</td><td>${fund.forwardMedian.toFixed(2)}%</td><td><b>${(composites[fund.id] * 100).toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
   }).join('');
-  $('#dd-math').innerHTML = `<p class="eyebrow">TRANSPARENT DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Macro score = <b>${macroRate.toFixed(2)} / 5</b>; it falls in the ${data.portfolio.rateBand} band, so the optimizer must remain at or below <b>${data.portfolio.drawdownCap}%</b>.</p><div class="scroll"><table><thead><tr><th>Fund</th><th>Historical / proxy DD</th><th>Forward median DD</th><th>60% + 40% composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio equation: sqrt(sum_i sum_j (w_i * DD_i * w_j * DD_j * rho_ij)). Correlations: money/tech 0.10, money/Nasdaq 0.10, tech/Nasdaq 0.80. The Nasdaq historical input is a target-ETF proxy because the ATRAM feeder launched in 2026. Forward medians are 10-year scenario assumptions, not predictions.</p>`;
+  $('#dd-math').innerHTML = `<p class="eyebrow">60 / 40 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Fund composite = 60% historical/proxy DD + 40% forward 10-year median DD.</p><div class="scroll"><table><thead><tr><th>Fund</th><th>Historical / proxy</th><th>Forward median</th><th>60/40 composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio DD = sqrt(ΣᵢΣⱼ wᵢ·DDᵢ·wⱼ·DDⱼ·ρᵢⱼ). Correlations: money/tech 0.10, money/Nasdaq 0.10, tech/Nasdaq 0.80. Forward medians and proxy inputs are model assumptions, not predictions.</p>`;
 }
 
 function renderDonut(node, allocation) {
   let cursor = 0;
-  node.style.background = `conic-gradient(${allocation.map(a => { const end = cursor + a.weight; const part = `${a.color} ${cursor}% ${end}%`; cursor = end; return part; }).join(',')})`;
+  node.style.background = `conic-gradient(${allocation.map((item) => { const end = cursor + item.weight; const part = `${item.color} ${cursor}% ${end}%`; cursor = end; return part; }).join(',')})`;
   cursor = 0;
   node.innerHTML = allocation.map((item) => {
     const midpoint = cursor + item.weight / 2;
@@ -106,12 +134,45 @@ function renderDonut(node, allocation) {
     return `<span class="donut-label" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">${item.weight}%</span>`;
   }).join('');
 }
-function heatColor(v) { const hue = 3 + ((v - 1) / 4) * 125; return `hsl(${hue} 70% 27%)`; }
-function rng(seed=20260811) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
-function normal(random) { let u=0,v=0; while(!u)u=random();while(!v)v=random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
-function percentile(xs,p) { const i=(xs.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i); return xs[lo]+(xs[hi]-xs[lo])*(i-lo); }
-function runMonteCarlo(mu,sigma) {
-  const random=rng(), values=[]; for(let i=0;i<10000;i++){let v=1;for(let m=0;m<120;m++)v*=Math.exp((mu-sigma*sigma/2)/12+sigma*normal(random)/Math.sqrt(12));values.push(v);} values.sort((a,b)=>a-b);
-  const q=[.1,.5,.9].map(x=>percentile(values,x)); $('#sim-output').innerHTML=`<span>10th percentile<br><b>${q[0].toFixed(2)}×</b></span><span>Median<br><b>${q[1].toFixed(2)}×</b></span><span>90th percentile<br><b>${q[2].toFixed(2)}×</b></span><span>Assumed volatility<br><b>${(sigma*100).toFixed(0)}%</b></span>`;
-  const c=$('#simulation-chart'),ctx=c.getContext('2d'),W=c.width,H=c.height, bins=32, max=Math.min(percentile(values,.985),5), counts=Array(bins).fill(0); values.forEach(v=>{const i=Math.min(bins-1,Math.floor(Math.min(v,max)/max*bins));counts[i]++}); const peak=Math.max(...counts);ctx.clearRect(0,0,W,H);ctx.fillStyle='#9bb0ca';ctx.font='22px system-ui';ctx.fillText('Terminal value multiple after 10 years',34,38); counts.forEach((n,i)=>{const x=36+i*(W-72)/bins,w=(W-72)/bins-3,h=n/peak*(H-100);ctx.fillStyle=i<bins*.3?'#b9f64c':i<bins*.7?'#47d8e8':'#ffad4d';ctx.fillRect(x,H-42-h,w,h)});ctx.fillStyle='#9bb0ca';ctx.font='16px system-ui';ctx.fillText('0×',32,H-15);ctx.fillText(`${max.toFixed(1)}×`,W-68,H-15);
+
+function heatColor(value) { const hue = 3 + ((value - 1) / 4) * 125; return `hsl(${hue} 70% 43%)`; }
+function rng(seed) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function normal(random) { let u = 0; let v = 0; while (!u) u = random(); while (!v) v = random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function percentile(values, probability) { const index = (values.length - 1) * probability; const low = Math.floor(index); const high = Math.ceil(index); return values[low] + (values[high] - values[low]) * (index - low); }
+
+function runMonteCarlo(mu, sigma, config) {
+  const random = rng(config.seed);
+  const values = [];
+  for (let path = 0; path < config.paths; path++) {
+    let value = 1;
+    for (let month = 0; month < config.months; month++) value *= Math.exp((mu - sigma * sigma / 2) / 12 + sigma * normal(random) / Math.sqrt(12));
+    values.push(value);
+  }
+  values.sort((left, right) => left - right);
+  const quantiles = [0.1, 0.5, 0.9].map((probability) => percentile(values, probability));
+  $('#sim-output').innerHTML = `<span>10th percentile<br><b>${quantiles[0].toFixed(2)}×</b></span><span>Median<br><b>${quantiles[1].toFixed(2)}×</b></span><span>90th percentile<br><b>${quantiles[2].toFixed(2)}×</b></span><span>Volatility input<br><b>${(sigma * 100).toFixed(0)}%</b></span>`;
+  const canvas = $('#simulation-chart');
+  const context = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  const bins = 32;
+  const max = Math.min(percentile(values, 0.985), 5);
+  const counts = Array(bins).fill(0);
+  values.forEach((value) => { const index = Math.min(bins - 1, Math.floor(Math.min(value, max) / max * bins)); counts[index]++; });
+  const peak = Math.max(...counts);
+  context.clearRect(0, 0, width, height);
+  context.fillStyle = '#63758a';
+  context.font = '22px system-ui';
+  context.fillText('Terminal value multiple after 10 years', 34, 38);
+  counts.forEach((count, index) => {
+    const x = 36 + index * (width - 72) / bins;
+    const barWidth = (width - 72) / bins - 3;
+    const barHeight = count / peak * (height - 100);
+    context.fillStyle = index < bins * 0.3 ? '#79c83d' : index < bins * 0.7 ? '#12a8c4' : '#f29b38';
+    context.fillRect(x, height - 42 - barHeight, barWidth, barHeight);
+  });
+  context.fillStyle = '#63758a';
+  context.font = '16px system-ui';
+  context.fillText('0×', 32, height - 15);
+  context.fillText(`${max.toFixed(1)}×`, width - 68, height - 15);
 }
