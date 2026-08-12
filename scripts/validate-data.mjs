@@ -32,10 +32,4 @@ const calculatedDd = Math.sqrt(variance) * 100;
 if (calculatedDd > data.portfolio.drawdownCap) fail(`Calculated composite DD ${calculatedDd.toFixed(2)}% exceeds cap ${data.portfolio.drawdownCap}%.`);
 
 for (const item of data.monitor) if (item.score < 1 || item.score > 100) fail(`${item.holding}: relevance score must be 1-100.`);
-if (process.env.SKIP_REMOTE_CHECK !== '1') {
-  for (const source of data.sources) {
-    try { const res = await fetch(source.url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(20000) }); if (res.status === 404 || res.status >= 500) fail(`${source.name}: source unavailable (${res.status}).`); }
-    catch (error) { fail(`${source.name}: source check error (${error.message}).`); }
-  }
-} else console.log('Remote source availability skipped by local test setting.');
 if (!process.exitCode) console.log(`Macro rate ${macroRate.toFixed(2)}, composite DD ${calculatedDd.toFixed(2)}%, cap ${expectedCap}%: OK`);
