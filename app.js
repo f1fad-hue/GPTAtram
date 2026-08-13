@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260813-5', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260813-6', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -118,7 +118,7 @@ function renderDrawdownMath(data, macroRate, portfolioDd) {
     const allocation = data.portfolio.allocation.find((item) => item.id === fund.id);
     return `<tr><td>${allocation.name}<br><small>${fund.historicalMetric}<br>${fund.forwardMetric}</small></td><td>${fund.historical.toFixed(2)}%</td><td>${fund.forwardMedian.toFixed(2)}%</td><td><b>${(composites[fund.id] * 100).toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
   }).join('');
-  $('#dd-math').innerHTML = `<p class="eyebrow">60 / 40 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Fund composite = 60% target-vehicle historical downside + 40% forward median for the same target vehicle. Money Market uses its own A PHP fund for both inputs because it has no target.</p><div class="scroll"><table><thead><tr><th>Fund / DD basis</th><th>Target history</th><th>Target forward median</th><th>60/40 target composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio DD = sqrt(ΣᵢΣⱼ wᵢ·DDᵢ·wⱼ·DDⱼ·ρᵢⱼ). Fidelity's 23.50% input is a manager-published calendar-loss proxy, not exact daily MDD. JPM's 8.53% is monthly total-return MDD from its short post-launch history. Target forward medians and correlations are model assumptions.</p>`;
+  $('#dd-math').innerHTML = `<p class="eyebrow">60 / 40 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Fund composite = 60% historical downside + 40% forward median for the documented underlying or proxy vehicle. Money Market uses its own fund because it has no target.</p><div class="scroll"><table><thead><tr><th>Fund / DD basis</th><th>Historical input</th><th>Forward median</th><th>60/40 composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio DD = sqrt(ΣᵢΣⱼ wᵢ·DDᵢ·wⱼ·DDⱼ·ρᵢⱼ). Fidelity's 23.50% is a published calendar-loss proxy. Nasdaq uses U.S. JEPQ's official 21.69% daily raw-NAV MDD as a longer-history proxy; it is not distribution-adjusted. ATRAM's actual target remains UCITS ETF IE000U9J8HX9. Forward medians and correlations are model assumptions.</p>`;
 }
 
 function renderDonut(node, allocation) {

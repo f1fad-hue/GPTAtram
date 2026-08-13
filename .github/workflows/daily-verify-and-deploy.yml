@@ -22,7 +22,7 @@ jobs:
         with: {node-version: 22}
       - name: Validate data constraints and drawdown guardrails
         run: npm run validate
-      - name: Recompute target ETF drawdown from official total-return data
+      - name: Recompute JEPQ strategy-proxy drawdown from official total-return data
         run: npm run validate:target-dd
       - name: Audit authoritative sources and factual-claim coverage
         run: AUDIT_REPORT_PATH=reports/daily-authoritative-audit.md npm run audit
@@ -42,8 +42,9 @@ jobs:
           grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json
           grep -q 'LU1046421795' data/portfolio.json
           grep -q 'IE000U9J8HX9' data/portfolio.json
+          grep -q '46654Q203' data/portfolio.json
           grep -q 'Fidelity target 10-year forward median DD' data/portfolio.json
-          grep -q 'JPM target ETF 10-year forward median DD' data/portfolio.json
+          grep -q 'JEPQ strategy-proxy 10-year forward median DD' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4
