@@ -22,6 +22,8 @@ jobs:
         with: {node-version: 22}
       - name: Validate data constraints and drawdown guardrails
         run: npm run validate
+      - name: Recompute target ETF drawdown from official total-return data
+        run: npm run validate:target-dd
       - name: Audit authoritative sources and factual-claim coverage
         run: AUDIT_REPORT_PATH=reports/daily-authoritative-audit.md npm run audit
       - name: Run code, math and static-site sanity checks
@@ -29,6 +31,7 @@ jobs:
           node --check app.js
           node --check scripts/validate-data.mjs
           node --check scripts/authoritative-audit.mjs
+          node --check scripts/validate-target-dd.mjs
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
           test -f index.html && test -f app.js && test -f styles.css
@@ -37,6 +40,8 @@ jobs:
           grep -q 'ATRAM Peso Money Market Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Global Technology Feeder Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json
+          grep -q 'LU1046421795' data/portfolio.json
+          grep -q 'IE000U9J8HX9' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4

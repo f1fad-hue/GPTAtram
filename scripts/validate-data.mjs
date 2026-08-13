@@ -33,8 +33,12 @@ const expectedCap = macroRate < 4 ? 20 : macroRate < 5 ? 25 : 30;
 if (data.portfolio.drawdownCap !== expectedCap) fail(`Rate ${macroRate.toFixed(2)} requires a ${expectedCap}% DD cap.`);
 
 const ddModel = data.drawdownModel;
-if (ddModel?.weights.historical !== 0.60 || ddModel?.weights.forwardMedian !== 0.40) fail('DD composite must remain exactly 60% observed A PHP raw-NAV DD and 40% forward median.');
-if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !fund.historicalBasis.includes('official'))) fail('Every historical DD input must document its official ATRAM NAV basis.');
+if (ddModel?.weights.historical !== 0.60 || ddModel?.weights.forwardMedian !== 0.40) fail('DD composite must remain exactly 60% authoritative target/own-fund historical downside and 40% forward median.');
+if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !fund.historicalBasis || !fund.historicalMetric || !fund.sourceIds?.length)) fail('Every historical DD input must document its metric, basis and authoritative source.');
+const ddFunds = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund]));
+if (!ddFunds.money.historicalBasis.includes('no target vehicle') || !ddFunds.money.sourceIds.includes('atramMoneyKiid')) fail('Money-market DD must use its own official A PHP NAV because it has no target vehicle.');
+if (!ddFunds.tech.historicalBasis.includes('LU1046421795') || !ddFunds.tech.historicalMetric.includes('proxy') || !ddFunds.tech.sourceIds.includes('fidelity')) fail('Technology DD must use the exact Fidelity target and label the published-calendar-loss proxy.');
+if (!ddFunds.nasdaq.historicalBasis.includes('IE000U9J8HX9') || !ddFunds.nasdaq.historicalMetric.includes('total-return') || !ddFunds.nasdaq.sourceIds.includes('jpmorganHistory')) fail('Nasdaq DD must use the exact JPM target ETF total-return history.');
 const compositeDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, (fund.historical * 0.60 + fund.forwardMedian * 0.40) / 100]));
 const correlations = ddModel.correlations;
 function portfolioDd(allocation) {

@@ -9,13 +9,13 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 ## Model guardrails
 
 - Macro sentiment: 1 bearish to 5 bullish, using ten non-overlapping portfolio drivers across 3, 6 and 12 months.
-- Drawdown: exactly 60% observed A PHP raw-NAV DD plus 40% forward-looking 10-year median DD.
+- Drawdown: exactly 60% authoritative underlying target-fund/ETF historical downside plus 40% forward-looking 10-year median DD. The standalone money-market UITF uses its own A PHP NAV because it has no target.
 - Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
 - Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
 - Net CAGR: gross 10-year scenario minus every ATRAM/operating and target-fund/ETF fee displayed in the official A PHP KIID.
 - Monte Carlo: 10,000 reproducible monthly-lognormal paths over 120 months.
 
-Forecasts, proxy drawdowns, correlations and forward medians are model assumptions, not promises or observed facts.
+The Fidelity target input is its manager-published largest calendar-year loss and is explicitly labelled as a proxy, not an exact daily MDD. The JPM target input is monthly total-return MDD from manager data. Forecasts, correlations and forward medians are model assumptions, not promises.
 
 ## Verification and publishing
 
