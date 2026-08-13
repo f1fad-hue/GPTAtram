@@ -14,17 +14,42 @@ const warnings = [];
 const records = [];
 const fail = (message) => errors.push(message);
 const sourceById = new Map(registry.sources.map((source) => [source.id, source]));
+const sourceByUrl = new Map(registry.sources.map((source) => [source.url, source]));
+const usedSourceIds = new Set();
+const registerSources = (context, sourceIds) => {
+  if (!Array.isArray(sourceIds) || sourceIds.length === 0) {
+    fail(`${context}: no authoritative source mapping.`);
+    return;
+  }
+  for (const id of sourceIds) {
+    if (!sourceById.has(id)) fail(`${context}: unknown source ${id}.`);
+    else usedSourceIds.add(id);
+  }
+};
 
+if (sourceById.size !== registry.sources.length) fail('Source registry IDs must be unique.');
 for (const source of registry.sources) {
   const url = new URL(source.url);
   if (url.protocol !== 'https:' || !url.hostname.endsWith(source.domain)) fail(`${source.id}: URL is not on its declared authoritative HTTPS domain.`);
 }
+if (new Set(claims.claims.map((claim) => claim.id)).size !== claims.claims.length) fail('Claim registry IDs must be unique.');
 for (const claim of claims.claims) {
-  if (claim.kind === 'factual' && claim.sourceIds.length === 0) fail(`${claim.id}: factual claim has no authoritative source.`);
-  for (const id of claim.sourceIds) if (!sourceById.has(id)) fail(`${claim.id}: unknown source ${id}.`);
+  if (claim.kind === 'factual') registerSources(claim.id, claim.sourceIds);
+  else for (const id of claim.sourceIds ?? []) registerSources(claim.id, [id]);
 }
-for (const driver of portfolio.drivers) for (const id of driver.sourceIds) if (!sourceById.has(id)) fail(`${driver.id}: unknown macro source ${id}.`);
-for (const fund of portfolio.fundModels) for (const id of fund.sourceIds) if (!sourceById.has(id)) fail(`${fund.id}: unknown fee source ${id}.`);
+for (const driver of portfolio.drivers) registerSources(`${driver.id} macro driver`, driver.sourceIds);
+for (const fund of portfolio.fundModels) registerSources(`${fund.id} fee model`, fund.sourceIds);
+for (const fund of portfolio.drawdownModel.funds) registerSources(`${fund.id} drawdown model`, fund.sourceIds);
+for (const source of portfolio.sources) {
+  registerSources(`${source.name} displayed source`, source.sourceIds);
+  if (!source.sourceIds?.some((id) => sourceById.get(id)?.url === source.url)) fail(`${source.name}: displayed URL does not match its mapped registry source.`);
+}
+for (const slide of portfolio.slides) for (const source of slide.sources) {
+  const registered = sourceByUrl.get(source.url);
+  if (!registered) fail(`${slide.title}: slide link ${source.label} is absent from the authoritative registry.`);
+  else usedSourceIds.add(registered.id);
+}
+for (const source of registry.sources) if (!usedSourceIds.has(source.id)) fail(`${source.id}: registry entry is unused and should be removed.`);
 
 if (process.env.SKIP_REMOTE_CHECK !== '1') {
   const retrieve = async (source) => {
@@ -56,7 +81,8 @@ const lines = [
   '# Daily authoritative-source audit', '', `Generated: ${timestamp}`, '',
   `Result: **${errors.length ? 'FAILED' : 'PASSED'}**`, '',
   '## Scope',
-  '- Factual claims, macro inputs and fee inputs must map to approved authoritative sources.',
+  '- Factual claims, macro inputs, fee/DD inputs and every displayed source link must map to an approved authoritative source.',
+  '- Unused source-registry entries fail the audit so stale or unnecessary sources cannot accumulate.',
   '- Model outputs are labelled as model assumptions and validated separately.',
   '- A retrieval failure or unsupported claim blocks deployment; the audit does not invent replacement data.', '',
   '## Source retrieval', ...records.map((record) => `- ${record.id}: HTTP ${record.status}; ${record.bytes} bytes; SHA-256 prefix ${record.digest}; attempt ${record.attempt}; ${record.url}`), '',

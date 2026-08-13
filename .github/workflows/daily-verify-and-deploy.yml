@@ -20,18 +20,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: 22}
-      - name: Validate data constraints and drawdown guardrails
-        run: npm run validate
-      - name: Recompute JEPQ strategy-proxy drawdown from official total-return data
-        run: npm run validate:target-dd
-      - name: Audit authoritative sources and factual-claim coverage
-        run: AUDIT_REPORT_PATH=reports/daily-authoritative-audit.md npm run audit
+      - name: Run authoritative-source, data, DD and Monte Carlo verification
+        env:
+          AUDIT_REPORT_PATH: reports/daily-authoritative-audit.md
+        run: npm test
       - name: Run code, math and static-site sanity checks
         run: |
           node --check app.js
           node --check scripts/validate-data.mjs
           node --check scripts/authoritative-audit.mjs
           node --check scripts/validate-target-dd.mjs
+          node --check scripts/validate-monte-carlo.mjs
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
           test -f index.html && test -f app.js && test -f styles.css

@@ -28,6 +28,6 @@ for (const row of rows) {
 const stored = portfolio.drawdownModel.funds.find((fund) => fund.id === 'nasdaq');
 if (!stored?.sourceIds?.includes('jepqHistory')) throw new Error('Nasdaq DD is not mapped to the official JEPQ strategy-proxy history source.');
 if (Math.abs(stored.historical - maximum.drawdown) > 0.02) {
-  throw new Error(`Stored JEPQ proxy DD ${stored.historical.toFixed(4)}% differs from current official monthly total-return MDD ${maximum.drawdown.toFixed(4)}%. Update and re-optimize before deployment.`);
+  throw new Error(`Stored JEPQ proxy DD ${stored.historical.toFixed(4)}% differs from current official daily raw-NAV MDD ${maximum.drawdown.toFixed(4)}%. Update and re-optimize before deployment.`);
 }
 console.log(`JEPQ strategy proxy ${rows.length}-day raw-NAV MDD ${maximum.drawdown.toFixed(4)}% (${maximum.peakDate} to ${maximum.troughDate}): verified; not distribution-adjusted.`);

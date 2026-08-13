@@ -28,9 +28,12 @@ const horizonWeights = data.macroModel.horizonWeights;
 const driverWeights = data.macroModel.driverWeights;
 if (!close(sum(Object.values(horizonWeights)), 1, 1e-9) || !close(sum(Object.values(driverWeights)), 1, 1e-9)) fail('Macro horizon and driver weights must each total 100%.');
 const macroRate = data.drivers.reduce((total, driver) => total + (driver.values[0] * horizonWeights.threeMonth + driver.values[1] * horizonWeights.sixMonth + driver.values[2] * horizonWeights.twelveMonth) * driverWeights[driver.id], 0);
+if (macroRate < 1 || macroRate > 5) fail('Portfolio macro rate must remain on the 1 bearish to 5 bullish scale.');
 if (!close(macroRate, data.portfolio.rate)) fail(`Stored rate ${data.portfolio.rate} does not match calculated rate ${macroRate.toFixed(2)}.`);
 const expectedCap = macroRate < 4 ? 20 : macroRate < 5 ? 25 : 30;
 if (data.portfolio.drawdownCap !== expectedCap) fail(`Rate ${macroRate.toFixed(2)} requires a ${expectedCap}% DD cap.`);
+const expectedRateBand = macroRate < 4 ? '3.00-3.99' : macroRate < 5 ? '4.00-4.99' : '5.00';
+if (data.portfolio.rateBand !== expectedRateBand) fail(`Rate ${macroRate.toFixed(2)} requires the ${expectedRateBand} stored rate band.`);
 
 const ddModel = data.drawdownModel;
 if (ddModel?.weights.historical !== 0.60 || ddModel?.weights.forwardMedian !== 0.40) fail('DD composite must remain exactly 60% authoritative target/own-fund historical downside and 40% forward median.');
@@ -75,7 +78,10 @@ function optimize(cap) {
 
 const activeBest = optimize(data.portfolio.drawdownCap);
 if (activeBest.allocation.some((weight, index) => weight !== activeAllocation[index])) fail(`Active allocation is not maximum forecast CAGR. Expected ${activeBest.allocation.join('/')}.`);
+const requiredScenarios = new Map([['3.00-3.99', 20], ['4.00-4.99', 25], ['5.00', 30]]);
+if (data.scenarios.length !== 3 || new Set(data.scenarios.map((scenario) => scenario.rate)).size !== 3) fail('Exactly one optimized rate 3, 4 and 5 scenario is required.');
 for (const scenario of data.scenarios) {
+  if (scenario.cap !== requiredScenarios.get(scenario.rate)) fail(`${scenario.rate}: scenario DD cap is not the required rating-dependent cap.`);
   if (sum(scenario.allocation) !== 100 || scenario.allocation.some((weight) => weight < data.optimizer.minimumFundWeight || weight % data.optimizer.gridStep !== 0)) fail(`${scenario.rate}: invalid allocation grid.`);
   const best = optimize(scenario.cap);
   if (best.allocation.some((weight, index) => weight !== scenario.allocation[index])) fail(`${scenario.rate}: scenario is not the CAGR-maximizing allocation. Expected ${best.allocation.join('/')}.`);
@@ -84,7 +90,8 @@ for (const scenario of data.scenarios) {
 
 if (data.monteCarlo.paths !== 10000 || data.monteCarlo.months !== 120 || !Number.isInteger(data.monteCarlo.seed)) fail('Monte Carlo must use 10,000 reproducible paths over 120 months.');
 if (data.slides.length !== 3 || data.slides.some((slide) => slide.facts.length < 6 || !slide.sources?.length)) fail('Each required fund needs a fee/CAGR/DD slide with authoritative links.');
-if (data.monitor.length < 5 || data.monitor.some((item) => item.score < 1 || item.score > 100 || !item.trigger || !item.cadence)) fail('Fund and target-vehicle relevance monitoring must include scores, triggers and cadence.');
+const requiredMonitors = ['ATRAM Peso Money Market Fund - A PHP', 'ATRAM Global Technology Feeder Fund - A PHP', 'Fidelity Global Technology target fund', 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP', 'JPM Nasdaq Equity Premium Income target ETF', 'U.S.-listed JEPQ strategy-history proxy'];
+if (data.monitor.length !== requiredMonitors.length || new Set(data.monitor.map((item) => item.holding)).size !== data.monitor.length || !requiredMonitors.every((holding) => data.monitor.some((item) => item.holding === holding)) || data.monitor.some((item) => item.score < 1 || item.score > 100 || !item.status || !item.trigger || !item.cadence)) fail('Relevance monitoring must cover every required A PHP fund and its target/proxy vehicle exactly once, with score, status, trigger and cadence.');
 
 if (errors.length) {
   errors.forEach((message) => console.error(`VALIDATION FAILED: ${message}`));
