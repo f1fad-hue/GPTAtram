@@ -14,7 +14,11 @@ if (data.portfolio.allocation.some((item) => item.weight < data.optimizer.minimu
 
 if (data.fundModels.length !== 3 || new Set(data.fundModels.map((fund) => fund.id)).size !== 3) fail('Each required fund must have exactly one fee-adjusted CAGR model.');
 for (const fund of data.fundModels) {
-  if (!close(fund.netCagr, fund.grossCagr - fund.wrapperFee - fund.targetFee, 1e-9)) fail(`${fund.id}: net CAGR must equal gross scenario minus wrapper and target fees.`);
+  const expectedTargetLevel = fund.id === 'money' ? null : fund.grossCagr - fund.targetFee;
+  if (fund.id === 'money' ? fund.targetLevelCagr !== null : !close(fund.targetLevelCagr, expectedTargetLevel, 1e-9)) fail(`${fund.id}: target-level forecast must equal gross scenario minus target fees, or null when no target exists.`);
+  const investableInput = fund.targetLevelCagr ?? fund.grossCagr;
+  if (!close(fund.netCagr, investableInput - fund.wrapperFee, 1e-9)) fail(`${fund.id}: A PHP net CAGR must equal the explicit target/own-fund input minus the complete wrapper fee stack.`);
+  if (!fund.forecastUse) fail(`${fund.id}: forecast-use basis is required.`);
   if (!fund.feeBasis || !Array.isArray(fund.sourceIds) || fund.sourceIds.length === 0) fail(`${fund.id}: fee basis and authoritative sources are required.`);
 }
 const requiredFeeSources = { money:'atramMoneyKiid', tech:'atramTechKiid', nasdaq:'atramNasdaqKiid' };
@@ -22,7 +26,9 @@ for (const fund of data.fundModels) if (!fund.sourceIds.includes(requiredFeeSour
 const nasdaqCagr = data.fundModels.find((fund) => fund.id === 'nasdaq');
 const targetBasedGross = 0.30 * 18.15 + 0.70 * 6.70;
 const targetFeeAdjustment = 0.70 * 0.35;
-if (!close(nasdaqCagr.grossCagr, targetBasedGross, 1e-9) || !close(nasdaqCagr.targetFee, targetFeeAdjustment, 1e-9) || !close(nasdaqCagr.netCagr, 8.24, 1e-9)) fail('Nasdaq CAGR must use the approved target-based formula: 30% UCITS official total return + 70% JPM LTCMA, less only the non-embedded target fee and complete ATRAM wrapper fees.');
+if (!close(nasdaqCagr.grossCagr, targetBasedGross, 1e-9) || !close(nasdaqCagr.targetFee, targetFeeAdjustment, 1e-9) || !close(nasdaqCagr.targetLevelCagr, 9.89, 1e-9) || !close(nasdaqCagr.netCagr, 8.24, 1e-9)) fail('Nasdaq CAGR must use the explicit 9.89% target-level forecast before the complete ATRAM wrapper-fee deduction.');
+const techCagr = data.fundModels.find((fund) => fund.id === 'tech');
+if (!close(techCagr.targetLevelCagr, 11.31, 1e-9) || !close(techCagr.netCagr, 10.06, 1e-9)) fail('Technology CAGR must use the explicit 11.31% target-level forecast before the complete ATRAM wrapper-fee deduction.');
 if (!nasdaqCagr.returnBasis?.includes('IE000U9J8HX9') || !nasdaqCagr.returnBasis?.includes('JEPQ is excluded from CAGR') || !['atramNasdaqKiid','jpmNasdaqFactsheet','jpmLtcma'].every((id) => nasdaqCagr.sourceIds.includes(id)) || nasdaqCagr.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must map to the actual UCITS target and LTCMA, never JEPQ history.');
 
 if (data.drivers.length !== 12) fail('Macro model must use exactly twelve distinct portfolio-relevant drivers.');

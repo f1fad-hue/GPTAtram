@@ -13,6 +13,7 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 - Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
 - Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
 - Net CAGR: gross 10-year scenario minus every ATRAM/operating and target-fund/ETF fee displayed in the official A PHP KIID.
+- Explicit target inputs: Fidelity 11.31% and Nasdaq UCITS 9.89%, both already net of their applicable target-level fee adjustment. The optimizer deducts the complete ATRAM A PHP wrapper fees and uses fully net 10.06% and 8.24%; Peso Money Market has no target and remains 3.47% net.
 - Nasdaq role separation: the actual UCITS target IE000U9J8HX9 supplies the CAGR basis; U.S. JEPQ supplies only the longer-history DD proxy. The 8.24% net CAGR blends 30% of the target's official 18.15% annualized total return with 70% of JPM's 6.70% long-term U.S. large-cap assumption, then removes the non-embedded target fee and the complete ATRAM wrapper fee stack.
 - Monte Carlo: 10,000 reproducible monthly-lognormal paths over 120 months.
 - Look-through: the three required ATRAM funds and their official target/proxy vehicles are modeled; the portfolio has no direct-stock holdings, so no unsupported stock sleeve is invented.

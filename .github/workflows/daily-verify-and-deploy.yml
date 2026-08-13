@@ -48,6 +48,8 @@ jobs:
           grep -q '46654Q203' data/portfolio.json
           grep -q 'JEPQ is excluded from CAGR and used only for DD' data/portfolio.json
           grep -q '30% × official UCITS target annualized total return 18.15%' data/portfolio.json
+          grep -q '"targetLevelCagr":11.31' data/portfolio.json
+          grep -q '"targetLevelCagr":9.89' data/portfolio.json
           grep -q 'Active DD: Fidelity target simulated 10-year P50 median maximum DD' data/portfolio.json
           grep -q 'Active DD: JEPQ-proxy simulated 10-year P50 median maximum DD' data/portfolio.json
           grep -q '"basis":"forwardP50Only"' data/portfolio.json
