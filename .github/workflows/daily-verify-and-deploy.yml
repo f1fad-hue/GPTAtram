@@ -42,6 +42,8 @@ jobs:
           grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json
           grep -q 'LU1046421795' data/portfolio.json
           grep -q 'IE000U9J8HX9' data/portfolio.json
+          grep -q 'Fidelity target 10-year forward median DD' data/portfolio.json
+          grep -q 'JPM target ETF 10-year forward median DD' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4

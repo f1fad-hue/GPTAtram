@@ -10,6 +10,6 @@
     {"id":"macro-context","kind":"factual","claim":"Multilateral macro context","sourceIds":["worldbank"],"refresh":"daily source check; revise on new official release"},
     {"id":"sentiment-score","kind":"model","claim":"Ten-driver 3/6/12-month macro score","sourceIds":[],"refresh":"daily arithmetic, coverage and input-range validation; not an external factual claim"},
     {"id":"fee-adjusted-cagr","kind":"model","claim":"Per-fund gross scenario minus every fee displayed in each A PHP KIID and allocation-weighted portfolio net CAGR","sourceIds":[],"refresh":"daily KIID fee and arithmetic validation; forecasts are model assumptions"},
-    {"id":"cagr-drawdown-simulation","kind":"model","claim":"Constrained optimizer, 60/40 composite drawdown, correlations and Monte Carlo output","sourceIds":[],"refresh":"daily independent arithmetic, cap, optimizer and code validation; not an external factual claim"}
+    {"id":"cagr-drawdown-simulation","kind":"model","claim":"Constrained optimizer; 60% target-vehicle historical downside plus 40% forward median for the same target vehicle; correlations and Monte Carlo output. Money Market uses its own fund because it has no target.","sourceIds":[],"refresh":"daily independent target-basis, arithmetic, cap, optimizer and code validation; not an external factual claim"}
   ]
 }

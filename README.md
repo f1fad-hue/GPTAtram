@@ -9,7 +9,7 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 ## Model guardrails
 
 - Macro sentiment: 1 bearish to 5 bullish, using ten non-overlapping portfolio drivers across 3, 6 and 12 months.
-- Drawdown: exactly 60% authoritative underlying target-fund/ETF historical downside plus 40% forward-looking 10-year median DD. The standalone money-market UITF uses its own A PHP NAV because it has no target.
+- Drawdown: exactly 60% authoritative underlying target-fund/ETF historical downside plus 40% forward-looking 10-year median DD for the same target vehicle. The standalone money-market UITF uses its own A PHP fund for both inputs because it has no target.
 - Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
 - Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
 - Net CAGR: gross 10-year scenario minus every ATRAM/operating and target-fund/ETF fee displayed in the official A PHP KIID.
