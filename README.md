@@ -15,7 +15,7 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 - Net CAGR: gross 10-year scenario minus every ATRAM/operating and target-fund/ETF fee displayed in the official A PHP KIID.
 - Monte Carlo: 10,000 reproducible monthly-lognormal paths over 120 months.
 
-The Fidelity target input is its manager-published largest calendar-year loss and is explicitly labelled as a proxy, not an exact daily MDD. The Nasdaq input is JEPQ daily raw-NAV MDD from official JPM manager data and is explicitly labelled as not distribution-adjusted. Forecasts, correlations and forward medians are model assumptions, not promises.
+The Fidelity target input is the exact daily NAV maximum drawdown calculated from the manager's full official A-ACC-USD chart (LU1046421795): 31.66% from 28.71 on 19 February 2020 to 19.62 on 18 March 2020, across 3,203 observations. The Nasdaq input is JEPQ daily raw-NAV MDD from official JPM manager data and is explicitly labelled as not distribution-adjusted. Forecasts, correlations and forward medians are model assumptions, not promises.
 For the Nasdaq sleeve, the older U.S.-listed JEPQ (CUSIP 46654Q203) supplies the longer strategy-history DD proxy; the actual ATRAM target remains the newer UCITS ETF (ISIN IE000U9J8HX9).
 
 ## Verification and publishing
