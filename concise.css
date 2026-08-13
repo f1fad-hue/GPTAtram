@@ -1,0 +1,45 @@
+.metrics {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 42px;
+}
+
+.hero {
+  min-height: 260px;
+  padding: 30px;
+}
+
+.section-heading {
+  margin-top: 38px;
+}
+
+.rationale {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dd-math {
+  padding: 18px;
+}
+
+.dd-math table {
+  min-width: 600px;
+}
+
+@media (max-width: 720px) {
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .metrics .metric:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .hero {
+    padding: 22px;
+  }
+
+  .section-heading {
+    margin-top: 32px;
+  }
+}

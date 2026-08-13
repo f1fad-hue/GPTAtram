@@ -9,7 +9,7 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 ## Model guardrails
 
 - Macro sentiment: 1 bearish to 5 bullish, using twelve distinct portfolio drivers across 3, 6 and 12 months—the optimized coverage ceiling before signals become duplicates.
-- Drawdown: the simple allocation-weighted sum of independently seeded, 50,000-path simulated P50 10-year forward maximum drawdowns. The cap receives no diversification or correlation credit. Historical maximum DD is displayed for context but has zero allocation weight. Nasdaq uses older U.S. JEPQ as the DD proxy; Money Market uses its own A PHP fund because it has no target.
+- Drawdown: the simple allocation-weighted sum of verified historical maximum drawdowns. No forward-looking DD, blend, diversification credit, or correlation adjustment. Technology uses Fidelity A-ACC-USD; Nasdaq uses older U.S. JEPQ as the historical DD proxy; Money Market uses its own A PHP NAV because it has no target.
 - Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
 - Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
 - Net CAGR: gross 10-year scenario minus every ATRAM/operating and target-fund/ETF fee displayed in the official A PHP KIID.
@@ -18,7 +18,7 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 - Monte Carlo: 10,000 reproducible monthly-lognormal paths over 120 months.
 - Look-through: the three required ATRAM funds and their official target/proxy vehicles are modeled; the portfolio has no direct-stock holdings, so no unsupported stock sleeve is invented.
 
-The Fidelity historical context is the exact daily NAV maximum drawdown calculated from the manager's full official A-ACC-USD chart (LU1046421795): 31.66% from 28.71 on 19 February 2020 to 19.62 on 18 March 2020, across 3,203 observations. The Nasdaq historical context is JEPQ daily raw-NAV MDD from official JPM manager data and is explicitly labelled as not distribution-adjusted. Neither historical figure enters the allocation DD formula. Forward P50 DD is a reproducible monthly-lognormal model estimate: annual volatility is calibrated with 10,000 deterministic paths, then the median 10-year maximum drawdown is measured on an independent 50,000-path run. The portfolio cap applies the simple weighted sum of those three P50 estimates. Forecasts and simulated percentiles are model assumptions, not promises.
+The active DD inputs are: Peso Money Market 0.19%, Fidelity Global Technology 31.66%, and JEPQ raw-NAV 21.69%. Fidelity uses 3,203 official manager observations and JEPQ uses 1,072 official manager observations; JEPQ is explicitly not distribution-adjusted. The cap applies the simple weighted sum of these historical maximum drawdowns. Historical results do not guarantee future losses or returns.
 For the Nasdaq sleeve, the older U.S.-listed JEPQ (CUSIP 46654Q203) supplies only the longer strategy-history DD proxy. The actual ATRAM target UCITS ETF (ISIN IE000U9J8HX9) exclusively supplies the fund-specific return history used in the CAGR model.
 
 ## Verification and publishing

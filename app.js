@@ -12,7 +12,7 @@ const heading = (text) => [...document.querySelectorAll('.section-heading')].fin
 const tabGroups = {
   overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid'), $('#dd-math')],
   macro: [heading('Only drivers that can change allocations'), $('.heatmap-wrap'), heading('Optimized allocation scenarios'), $('#scenario-grid')],
-  research: [heading('Fee, CAGR and DD'), $('.slides'), heading('10-year outcome range'), $('.simulation')],
+  research: [heading('Net CAGR and historical DD'), $('.slides'), heading('10-year Monte Carlo'), $('.simulation')],
   monitor: [heading('When each holding stops earning a place'), $('.monitor')],
   sources: [$('.report')]
 };
@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260813-15', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260814-01', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -46,10 +46,9 @@ fetch('data/portfolio.json?v=20260813-15', { cache: 'no-store' }).then((response
   $('#allocation-total').textContent = `${portfolio.allocation.length} / 3`;
   $('#cagr-forecast').textContent = fmt(calculatedCagr, 2);
   $('#drawdown').textContent = fmt(portfolioDd, 2);
-  $('#path-count').textContent = data.monteCarlo.paths.toLocaleString();
   $('#allocation-constraint').innerHTML = `Rate <b>${macroRate.toFixed(2)}</b> selects the <b>${portfolio.rateBand}</b> band and <b>${portfolio.drawdownCap}%</b> DD cap.`;
-  $('#rationale-copy').textContent = `The 5%-grid optimizer includes all three required funds and selects the highest net-CAGR mix: ${calculatedCagr.toFixed(2)}% forecast CAGR with ${portfolioDd.toFixed(2)}% P50 10-year forward maximum drawdown.`;
-  $('#report-summary').innerHTML = `The active rate is <b>${macroRate.toFixed(2)} / 5 (${portfolio.ratingLabel})</b>. The optimized allocation forecasts <b>${calculatedCagr.toFixed(2)}% net CAGR</b> and <b>${portfolioDd.toFixed(2)}% P50 10-year forward maximum drawdown</b>. Historical DD is context only. Forecasts and forward DD values are model assumptions, not promises or observed facts.`;
+  $('#rationale-copy').textContent = `Highest net CAGR on the 5% grid: ${calculatedCagr.toFixed(2)}% with ${portfolioDd.toFixed(2)}% historical weighted DD.`;
+  $('#report-summary').innerHTML = `Rate <b>${macroRate.toFixed(2)} / 5</b> produces <b>${calculatedCagr.toFixed(2)}% net CAGR</b> and <b>${portfolioDd.toFixed(2)}% historical weighted DD</b>. Forecast CAGR is a model assumption; historical results do not predict future losses.`;
   $('#as-of').textContent = new Date(`${data.asOf}T00:00:00`).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
 
   renderDonut($('#active-donut'), portfolio.allocation);
@@ -82,12 +81,8 @@ function calculateMacroRate(data) {
   return data.drivers.reduce((total, driver) => total + (driver.values[0] * horizons.threeMonth + driver.values[1] * horizons.sixMonth + driver.values[2] * horizons.twelveMonth) * data.macroModel.driverWeights[driver.id], 0);
 }
 
-function calculateFundDrawdowns(data) {
-  return Object.fromEntries(data.drawdownModel.funds.map((fund) => [fund.id, fund.forwardP50 / 100]));
-}
-
 function calculatePortfolioDrawdown(data, allocationValues) {
-  const fundDrawdowns = calculateFundDrawdowns(data);
+  const fundDrawdowns = Object.fromEntries(data.drawdownModel.funds.map((fund) => [fund.id, fund.historical / 100]));
   return data.portfolio.allocation.reduce((total, item, index) => total + allocationValues[index] / 100 * fundDrawdowns[item.id], 0) * 100;
 }
 
@@ -99,14 +94,14 @@ function calculatePortfolioCagr(data, allocationValues) {
 function renderDrawdownMath(data, macroRate, portfolioDd) {
   const rows = data.drawdownModel.funds.map((fund) => {
     const allocation = data.portfolio.allocation.find((item) => item.id === fund.id);
-    const contribution = allocation.weight / 100 * fund.forwardP50;
-    return `<tr><td>${allocation.name}<br><small>${fund.historicalMetric}<br>${fund.forwardMetric}</small></td><td>${fund.historical.toFixed(2)}%</td><td><b>${fund.forwardP50.toFixed(2)}%</b></td><td>${allocation.weight}%</td><td><b>${contribution.toFixed(2)}%</b></td></tr>`;
+    const contribution = allocation.weight / 100 * fund.historical;
+    return `<tr><td>${allocation.name}<br><small>${fund.historicalMetric}</small></td><td><b>${fund.historical.toFixed(2)}%</b></td><td>${allocation.weight}%</td><td><b>${contribution.toFixed(2)}%</b></td></tr>`;
   }).join('');
   const contributions = data.drawdownModel.funds.map((fund) => {
     const allocation = data.portfolio.allocation.find((item) => item.id === fund.id);
-    return `${allocation.weight}% × ${fund.forwardP50.toFixed(2)}%`;
+    return `${allocation.weight}% × ${fund.historical.toFixed(2)}%`;
   }).join(' + ');
-  $('#dd-math').innerHTML = `<p class="eyebrow">SIMPLE WEIGHTED-SUM P50 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% P50 10-year forward maximum DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. The conservative calculation adds each fund's allocation multiplied by its simulated P50 10-year maximum drawdown. It gives no diversification or correlation credit. Historical maximum DD has zero weight.</p><div class="scroll"><table><thead><tr><th>Fund / DD basis</th><th>Historical context</th><th>Active forward P50 DD</th><th>Allocation</th><th>Weighted DD</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption"><b>Portfolio P50 DD = Σ(weight × fund P50 DD) = ${contributions} = ${portfolioDd.toFixed(2)}%.</b> Forward P50 is an independently seeded 50,000-path monthly-lognormal median estimate over 120 months, not an official forecast. Fidelity supplies the Technology target basis; U.S. JEPQ supplies only the Nasdaq DD proxy. Historical DD does not enter this formula.</p>`;
+  $('#dd-math').innerHTML = `<p class="eyebrow">HISTORICAL MAX DD MATH</p><h2>${portfolioDd.toFixed(2)}% weighted historical max DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><div class="scroll"><table><thead><tr><th>Fund / basis</th><th>Historical max DD</th><th>Allocation</th><th>Weighted DD</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption"><b>Σ(weight × historical max DD) = ${contributions} = ${portfolioDd.toFixed(2)}%.</b> No forward-looking DD or diversification credit.</p>`;
 }
 
 function renderDonut(node, allocation) {

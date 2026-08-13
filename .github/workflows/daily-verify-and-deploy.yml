@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: 22}
-      - name: Run authoritative-source, data, DD and Monte Carlo verification
+      - name: Run authoritative-source, historical DD and return-model verification
         env:
           AUDIT_REPORT_PATH: reports/daily-authoritative-audit.md
         run: npm test
@@ -30,12 +30,11 @@ jobs:
           node --check scripts/validate-data.mjs
           node --check scripts/authoritative-audit.mjs
           node --check scripts/validate-target-dd.mjs
-          node --check scripts/validate-drawdown-p50.mjs
           node --check scripts/validate-monte-carlo.mjs
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
-          test -f index.html && test -f app.js && test -f styles.css && test -f fund-grid.css
-          grep -q 'Fee, CAGR and DD — side by side' index.html
+          test -f index.html && test -f app.js && test -f styles.css && test -f fund-grid.css && test -f concise.css
+          grep -q 'Net CAGR and historical DD' index.html
           ! grep -q 'slide-controls' index.html
           grep -q 'Monte Carlo' index.html
           grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
@@ -52,10 +51,11 @@ jobs:
           grep -q '30% × official UCITS target annualized total return 18.15%' data/portfolio.json
           grep -q '"targetLevelCagr":11.31' data/portfolio.json
           grep -q '"targetLevelCagr":9.89' data/portfolio.json
-          grep -q 'Active DD: Fidelity target simulated 10-year P50 median maximum DD' data/portfolio.json
-          grep -q 'Active DD: JEPQ-proxy simulated 10-year P50 median maximum DD' data/portfolio.json
-          grep -q '"basis":"forwardP50Only"' data/portfolio.json
+          grep -q 'Target-fund historical daily NAV maximum drawdown' data/portfolio.json
+          grep -q 'JEPQ historical daily raw-NAV maximum drawdown proxy' data/portfolio.json
+          grep -q '"basis":"historicalMaximumDrawdownOnly"' data/portfolio.json
           grep -q '"aggregation":"simpleWeightedSum"' data/portfolio.json
+          ! grep -q 'forwardP50' data/portfolio.json
           ! grep -q '"correlations"' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()

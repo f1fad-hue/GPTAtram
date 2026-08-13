@@ -48,20 +48,15 @@ const expectedRateBand = macroRate < 4 ? '3.00-3.99' : macroRate < 5 ? '4.00-4.9
 if (data.portfolio.rateBand !== expectedRateBand) fail(`Rate ${macroRate.toFixed(2)} requires the ${expectedRateBand} stored rate band.`);
 
 const ddModel = data.drawdownModel;
-if (ddModel?.basis !== 'forwardP50Only' || ddModel?.aggregation !== 'simpleWeightedSum' || 'weights' in ddModel || 'correlations' in ddModel) fail('DD must use the simple allocation-weighted sum of forward-looking P50 median maximum drawdowns, with no historical composite or correlation credit.');
-if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !Number.isFinite(fund.forwardP50Calibration) || !Number.isFinite(fund.forwardP50) || !Number.isFinite(fund.annualVolatilityPct) || !fund.historicalBasis || !fund.historicalMetric || !fund.forwardMetric || !fund.forwardBasis || !fund.sourceIds?.length)) fail('Every DD input must document historical context, calibrated P50, independent forward P50, model volatility, basis and authoritative source.');
-if (ddModel.simulation?.calibrationPaths !== 10000 || ddModel.simulation?.validationPaths !== 50000 || ddModel.simulation?.months !== 120 || ddModel.simulation?.percentile !== 0.50 || !Number.isInteger(ddModel.simulation?.calibrationSeed) || !Number.isInteger(ddModel.simulation?.validationSeed)) fail('P50 DD simulation must document the reproducible 10,000-path calibration and independent 50,000-path validation over 120 months.');
+if (ddModel?.basis !== 'historicalMaximumDrawdownOnly' || ddModel?.aggregation !== 'simpleWeightedSum' || 'simulation' in ddModel || 'weights' in ddModel || 'correlations' in ddModel) fail('DD must use only the simple allocation-weighted sum of historical maximum drawdowns, with no forward DD, blend, or correlation credit.');
+if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !fund.historicalBasis || !fund.historicalMetric || !fund.sourceIds?.length || 'forwardP50' in fund || 'forwardBasis' in fund || 'forwardMetric' in fund)) fail('Every DD input must contain only a documented historical maximum drawdown and authoritative source.');
 const ddFunds = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund]));
-if (!ddFunds.money.historicalBasis.includes('no target vehicle') || !ddFunds.money.sourceIds.includes('atramMoneyKiid')) fail('Money-market DD must use its own official A PHP NAV because it has no target vehicle.');
+if (!ddFunds.money.historicalBasis.includes('no target vehicle') || !ddFunds.money.sourceIds.includes('atramMoneyKiid')) fail('Money-market historical maximum DD must use its own official A PHP NAV because it has no target vehicle.');
 if (!close(ddFunds.tech.historical, 31.6614, 1e-6) || !ddFunds.tech.historicalBasis.includes('LU1046421795') || !ddFunds.tech.historicalBasis.includes('3,203') || !ddFunds.tech.historicalBasis.includes('19 Feb 2020') || !ddFunds.tech.historicalBasis.includes('18 Mar 2020') || !ddFunds.tech.historicalMetric.includes('daily NAV maximum drawdown') || !ddFunds.tech.sourceIds.includes('fidelityNav')) fail('Technology DD must use the exact Fidelity A-ACC-USD official daily NAV maximum drawdown and document its record count, peak and trough.');
-if (!ddFunds.nasdaq.historicalBasis.includes('JEPQ') || !ddFunds.nasdaq.historicalBasis.includes('46654Q203') || !ddFunds.nasdaq.historicalBasis.includes('1,072') || !ddFunds.nasdaq.historicalBasis.includes('not distribution-adjusted') || !ddFunds.nasdaq.historicalBasis.includes('actual UCITS target IE000U9J8HX9') || !ddFunds.nasdaq.historicalMetric.includes('raw-NAV') || !ddFunds.nasdaq.sourceIds.includes('jepqHistory')) fail('Nasdaq DD must use official daily JEPQ raw-NAV history as a disclosed, non-distribution-adjusted proxy while preserving the actual UCITS target identity.');
-if (!ddFunds.tech.forwardBasis.includes('LU1046421795') || !ddFunds.tech.forwardMetric.includes('Fidelity target') || !ddFunds.tech.forwardMetric.includes('P50')) fail('Technology forward P50 DD must be explicitly based on the exact Fidelity target vehicle.');
-if (!ddFunds.nasdaq.forwardBasis.includes('JEPQ') || !ddFunds.nasdaq.forwardBasis.includes('IE000U9J8HX9') || !ddFunds.nasdaq.forwardMetric.includes('proxy') || !ddFunds.nasdaq.forwardMetric.includes('P50')) fail('Nasdaq forward P50 DD must explicitly use JEPQ as a strategy proxy without misidentifying the actual target.');
-if (!ddFunds.nasdaq.forwardBasis.includes('does not supply the CAGR forecast') || ddFunds.nasdaq.sourceIds.includes('jpmNasdaqFactsheet') || ddFunds.nasdaq.sourceIds.includes('jpmLtcma')) fail('Nasdaq DD must use JEPQ only and remain separate from the UCITS-based CAGR model.');
-if (ddModel.funds.some((fund) => !fund.historicalBasis.includes('excluded from the allocation DD calculation') || !fund.forwardBasis.includes('sole allocation DD input'))) fail('Historical DD must be context only and forward P50 must be the sole allocation DD input.');
-const forwardDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund.forwardP50 / 100]));
+if (!ddFunds.nasdaq.historicalBasis.includes('JEPQ') || !ddFunds.nasdaq.historicalBasis.includes('46654Q203') || !ddFunds.nasdaq.historicalBasis.includes('1,072') || !ddFunds.nasdaq.historicalBasis.includes('not distribution-adjusted') || !ddFunds.nasdaq.historicalBasis.includes('actual UCITS target IE000U9J8HX9') || !ddFunds.nasdaq.historicalMetric.includes('raw-NAV') || !ddFunds.nasdaq.sourceIds.includes('jepqHistory')) fail('Nasdaq historical maximum DD must use official daily JEPQ raw-NAV history as a disclosed, non-distribution-adjusted proxy while preserving the actual UCITS target identity.');
+const historicalDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund.historical / 100]));
 function portfolioDd(allocation) {
-  return allocation.reduce((total, weight, index) => total + weight / 100 * forwardDd[ids[index]], 0) * 100;
+  return allocation.reduce((total, weight, index) => total + weight / 100 * historicalDd[ids[index]], 0) * 100;
 }
 const netCagr = Object.fromEntries(data.fundModels.map((fund) => [fund.id, fund.netCagr]));
 function portfolioCagr(allocation) { return allocation.reduce((total, weight, index) => total + netCagr[ids[index]] * weight / 100, 0); }
@@ -100,7 +95,7 @@ for (const scenario of data.scenarios) {
 }
 
 if (data.monteCarlo.paths !== 10000 || data.monteCarlo.months !== 120 || !Number.isInteger(data.monteCarlo.seed)) fail('Monte Carlo must use 10,000 reproducible paths over 120 months.');
-if (data.slides.length !== 3 || data.slides.some((slide) => slide.facts.length < 6 || !slide.sources?.length)) fail('Each required fund needs a fee/CAGR/DD slide with authoritative links.');
+if (data.slides.length !== 3 || data.slides.some((slide) => slide.facts.length < 3 || !slide.sources?.length)) fail('Each required fund needs a concise CAGR/historical-DD card with authoritative links.');
 const requiredMonitors = ['ATRAM Peso Money Market Fund - A PHP', 'ATRAM Global Technology Feeder Fund - A PHP', 'Fidelity Global Technology target fund', 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP', 'JPM Nasdaq Equity Premium Income target ETF', 'U.S.-listed JEPQ strategy-history proxy'];
 if (data.monitor.length !== requiredMonitors.length || new Set(data.monitor.map((item) => item.holding)).size !== data.monitor.length || !requiredMonitors.every((holding) => data.monitor.some((item) => item.holding === holding)) || data.monitor.some((item) => item.score < 1 || item.score > 100 || !item.status || !item.trigger || !item.cadence)) fail('Relevance monitoring must cover every required A PHP fund and its target/proxy vehicle exactly once, with score, status, trigger and cadence.');
 
@@ -108,5 +103,5 @@ if (errors.length) {
   errors.forEach((message) => console.error(`VALIDATION FAILED: ${message}`));
   process.exitCode = 1;
 } else {
-  console.log(`Macro ${macroRate.toFixed(2)}, optimized allocation ${activeAllocation.join('/')}, net CAGR ${calculatedCagr.toFixed(3)}%, P50 10-year forward maximum DD ${calculatedDd.toFixed(2)}%, cap ${expectedCap}%: OK`);
+  console.log(`Macro ${macroRate.toFixed(2)}, optimized allocation ${activeAllocation.join('/')}, net CAGR ${calculatedCagr.toFixed(3)}%, weighted historical maximum DD ${calculatedDd.toFixed(2)}%, cap ${expectedCap}%: OK`);
 }
