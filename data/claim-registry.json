@@ -1,15 +1,15 @@
 {
   "lastHumanReview": "2026-08-13",
   "claims": [
-    {"id":"money-market-mandate","kind":"factual","claim":"ATRAM Peso Money Market D PHP class, fee, inception, mandate and NAV metadata","sourceIds":["atram"],"refresh":"daily official-record check"},
-    {"id":"global-tech-target","kind":"factual","claim":"ATRAM Global Technology D PHP class, fee, inception and Fidelity target-fund objective/fee/holdings","sourceIds":["atram","fidelity"],"refresh":"daily ATRAM check; monthly Fidelity factsheet review"},
-    {"id":"nasdaq-income-target","kind":"factual","claim":"ATRAM Nasdaq Equity Income D PHP class, fee, inception and JPM target-ETF objective/fee/options strategy","sourceIds":["atram","jpmorgan"],"refresh":"daily ATRAM check; monthly JPMorgan document review"},
+    {"id":"money-market-mandate","kind":"factual","claim":"ATRAM Peso Money Market A PHP class, complete displayed fees, inception, mandate and NAV metadata","sourceIds":["atramMoneyKiid"],"refresh":"daily official-record check; monthly KIID review"},
+    {"id":"global-tech-target","kind":"factual","claim":"ATRAM Global Technology A PHP class, complete displayed fees, inception, A-ACC-USD target TER/objective and official NAV history","sourceIds":["atramTechKiid"],"refresh":"daily ATRAM NAV check; monthly KIID review"},
+    {"id":"nasdaq-income-target","kind":"factual","claim":"ATRAM Nasdaq Equity Income A PHP class, complete displayed fees, inception, target ETF TER/options strategy and official raw-NAV history","sourceIds":["atramNasdaqKiid"],"refresh":"daily ATRAM NAV check; monthly KIID review"},
     {"id":"policy-liquidity","kind":"factual","claim":"Fed, US real-yield and BSP policy/liquidity context","sourceIds":["fed","realYields","bsp"],"refresh":"daily source check; revise after each policy decision"},
     {"id":"us-cycle","kind":"factual","claim":"US inflation, growth, labor and financial-conditions context","sourceIds":["bls","bea","fred"],"refresh":"daily source check; revise on each official release"},
     {"id":"market-mechanics","kind":"factual","claim":"Nasdaq index concentration and option-implied volatility context","sourceIds":["nasdaq","cboe","jpmorgan"],"refresh":"daily source check; monthly methodology review"},
     {"id":"macro-context","kind":"factual","claim":"Multilateral macro context","sourceIds":["worldbank"],"refresh":"daily source check; revise on new official release"},
     {"id":"sentiment-score","kind":"model","claim":"Ten-driver 3/6/12-month macro score","sourceIds":[],"refresh":"daily arithmetic, coverage and input-range validation; not an external factual claim"},
-    {"id":"fee-adjusted-cagr","kind":"model","claim":"Per-fund gross scenario minus all stated wrapper/target fees and allocation-weighted portfolio net CAGR","sourceIds":[],"refresh":"daily fee and arithmetic validation; forecasts are model assumptions"},
+    {"id":"fee-adjusted-cagr","kind":"model","claim":"Per-fund gross scenario minus every fee displayed in each A PHP KIID and allocation-weighted portfolio net CAGR","sourceIds":[],"refresh":"daily KIID fee and arithmetic validation; forecasts are model assumptions"},
     {"id":"cagr-drawdown-simulation","kind":"model","claim":"Constrained optimizer, 60/40 composite drawdown, correlations and Monte Carlo output","sourceIds":[],"refresh":"daily independent arithmetic, cap, optimizer and code validation; not an external factual claim"}
   ]
 }

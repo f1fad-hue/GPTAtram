@@ -5,12 +5,12 @@
     "rateBand": "3.00-3.99",
     "ratingLabel": "constructive",
     "drawdownCap": 20,
-    "netCagrForecast": 7.675,
+    "netCagrForecast": 8.2005,
     "volatility": 0.15,
     "allocation": [
-      {"id":"money","name":"ATRAM Peso Money Market Fund - D PHP","weight":25,"color":"#7ac943"},
-      {"id":"tech","name":"ATRAM Global Technology Feeder Fund - D PHP","weight":25,"color":"#12a8c4"},
-      {"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder Fund - D PHP","weight":50,"color":"#f29b38"}
+      {"id":"money","name":"ATRAM Peso Money Market Fund - A PHP","weight":5,"color":"#7ac943"},
+      {"id":"tech","name":"ATRAM Global Technology Feeder Fund - A PHP","weight":45,"color":"#12a8c4"},
+      {"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder Fund - A PHP","weight":50,"color":"#f29b38"}
     ]
   },
   "optimizer": {
@@ -20,9 +20,9 @@
     "allRequired": true
   },
   "fundModels": [
-    {"id":"money","grossCagr":4.00,"wrapperFee":0.10,"targetFee":0.00,"netCagr":3.90,"feeBasis":"ATRAM D PHP management fee; no target-fund fee.","sourceIds":["atram"]},
-    {"id":"tech","grossCagr":12.50,"wrapperFee":0.50,"targetFee":1.50,"netCagr":10.50,"feeBasis":"ATRAM D PHP fee plus the target fund annual management fee shown in Fidelity's official factsheet.","sourceIds":["atram","fidelity"]},
-    {"id":"nasdaq","grossCagr":9.00,"wrapperFee":0.50,"targetFee":0.35,"netCagr":8.15,"feeBasis":"ATRAM D PHP fee plus the target ETF total expense ratio.","sourceIds":["atram","jpmorgan"]}
+    {"id":"money","grossCagr":4.00,"wrapperFee":0.53,"targetFee":0.00,"netCagr":3.47,"feeBasis":"A PHP KIID: 0.50% trust + 0.00% custody + 0.02% accounting + 0.01% audit + 0.00% other fees.","sourceIds":["atramMoneyKiid"]},
+    {"id":"tech","grossCagr":12.50,"wrapperFee":1.25,"targetFee":1.19,"netCagr":10.06,"feeBasis":"A PHP KIID: 1.23% trust + 0.01% accounting + 0.00% audit + 0.01% benchmark + 0.00% other; target A-ACC-USD TER 1.19%.","sourceIds":["atramTechKiid"]},
+    {"id":"nasdaq","grossCagr":9.00,"wrapperFee":1.65,"targetFee":0.35,"netCagr":7.00,"feeBasis":"A PHP KIID: 1.60% trust + 0.01% accounting + 0.01% audit + 0.03% benchmark + 0.00% other; target ETF TER 0.35%.","sourceIds":["atramNasdaqKiid"]}
   ],
   "macroModel": {
     "horizonWeights":{"threeMonth":0.45,"sixMonth":0.35,"twelveMonth":0.20},
@@ -31,11 +31,11 @@
   },
   "drawdownModel": {
     "weights":{"historical":0.60,"forwardMedian":0.40},
-    "formula":"Fund composite DD = 60% historical/proxy maximum drawdown + 40% forward-looking 10-year scenario median. Portfolio DD applies allocation weights and correlations.",
+    "formula":"Fund composite DD = 60% observed A PHP raw-NAV maximum drawdown + 40% forward-looking 10-year scenario median. Portfolio DD applies allocation weights and correlations.",
     "funds":[
-      {"id":"money","historical":0.10,"forwardMedian":0.45,"historicalBasis":"ATRAM money-market NAV behavior used as a historical stress input.","forwardBasis":"10-year scenario median; model assumption."},
-      {"id":"tech","historical":44.00,"forwardMedian":32.00,"historicalBasis":"ATRAM feeder history with target-fund proxy coverage for the missing period.","forwardBasis":"10-year scenario median; model assumption."},
-      {"id":"nasdaq","historical":24.00,"forwardMedian":20.00,"historicalBasis":"Target-ETF proxy because the ATRAM feeder began in 2026.","forwardBasis":"10-year scenario median; model assumption."}
+      {"id":"money","historical":0.1932,"forwardMedian":0.45,"historicalBasis":"Observed maximum drawdown from 3,076 official A PHP NAV records, 16 Dec 2013 to 11 Aug 2026; peak 3 Nov 2022, trough 4 Nov 2022.","forwardBasis":"10-year scenario median; model assumption."},
+      {"id":"tech","historical":29.2792,"forwardMedian":32.00,"historicalBasis":"Observed maximum drawdown from 2,014 official A PHP NAV records, 30 Apr 2018 to 10 Aug 2026; peak 17 Jan 2020, trough 18 Mar 2020.","forwardBasis":"10-year scenario median; model assumption."},
+      {"id":"nasdaq","historical":8.0234,"forwardMedian":20.00,"historicalBasis":"Observed raw-NAV maximum drawdown from 130 official A PHP records, 29 Jan to 10 Aug 2026; peak 3 Jun, trough 29 Jul. Conservative because monthly distributions are not total-return adjusted.","forwardBasis":"10-year scenario median; model assumption."}
     ],
     "correlations":{"money":{"money":1,"tech":0.10,"nasdaq":0.10},"tech":{"money":0.10,"tech":1,"nasdaq":0.80},"nasdaq":{"money":0.10,"tech":0.80,"nasdaq":1}}
   },
@@ -53,24 +53,26 @@
     {"id":"globalDemand","name":"Global growth and technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth","sourceIds":["worldbank"]}
   ],
   "scenarios": [
-    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.93,"netCagr":7.675,"allocation":[25,25,50]},
-    {"rate":"4.00-4.99","label":"Bullish","cap":25,"dd":24.99,"netCagr":8.6425,"allocation":[5,30,65]},
-    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":29.23,"netCagr":9.23,"allocation":[5,55,40]}
+    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.18,"netCagr":8.2005,"allocation":[5,45,50]},
+    {"rate":"4.00-4.99","label":"Bullish","cap":25,"dd":24.88,"netCagr":9.1185,"allocation":[5,75,20]},
+    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":27.85,"netCagr":9.5775,"allocation":[5,90,5]}
   ],
   "slides": [
-    {"tag":"UITF / PHP LIQUIDITY","title":"ATRAM Peso Money Market Fund - D PHP","thesis":"The liquidity sleeve. It lowers portfolio drawdown and supplies rebalancing capital; it is not the primary growth engine.","facts":[["Official inception","1 Sep 2025","ATRAM fund record"],["ATRAM management fee","0.10% p.a.","D PHP class"],["Gross 10Y scenario","4.00% CAGR","Model assumption"],["Net 10Y forecast","3.90% CAGR","Gross minus stated fee"],["Historical / forward DD","0.10% / 0.45%","Historical input / forward median"],["60/40 composite DD","0.24%","Model output"]],"sources":[{"label":"ATRAM fund portal","url":"https://www.atram.com.ph/"}]},
-    {"tag":"FEEDER FUND / GLOBAL EQUITY","title":"ATRAM Global Technology Feeder Fund - D PHP","thesis":"The concentrated technology sleeve. The model uses the Fidelity target-fund fee and current ATRAM D-class fee, then constrains its higher drawdown input.","facts":[["Official inception","10 Nov 2025","ATRAM D PHP class"],["ATRAM + target fees","0.50% + 1.50%","Official ATRAM / Fidelity records"],["Gross 10Y scenario","12.50% CAGR","Model assumption"],["Net 10Y forecast","10.50% CAGR","Gross minus stated fees"],["Historical / forward DD","44.00% / 32.00%","Historical/proxy / forward median"],["60/40 composite DD","39.20%","Model output"]],"sources":[{"label":"ATRAM fund portal","url":"https://www.atram.com.ph/"},{"label":"Fidelity target factsheet","url":"https://www.fidelityinternational.com/legal/documents/SG-en/hffs.SG-en.SG.G-TEC.pdf"}]},
-    {"tag":"FEEDER FUND / NASDAQ INCOME ETF","title":"ATRAM Nasdaq Equity Income Feeder Fund - D PHP","thesis":"The largest active sleeve because its forecast return-to-drawdown tradeoff is strongest in the current 20% risk band. Covered calls can limit upside while producing option-premium income.","facts":[["Official inception","29 Jan 2026","ATRAM D PHP class"],["ATRAM + target fees","0.50% + 0.35%","Official ATRAM / JPMorgan records"],["Gross 10Y scenario","9.00% CAGR","Model assumption"],["Net 10Y forecast","8.15% CAGR","Gross minus stated fees"],["Historical / forward DD","24.00% / 20.00%","Target-ETF proxy / forward median"],["60/40 composite DD","22.40%","Model output"]],"sources":[{"label":"ATRAM fund portal","url":"https://www.atram.com.ph/"},{"label":"JPMorgan target ETF sheet","url":"https://am.jpmorgan.com/content/dam/jpm-am-aem/asiapacific/sg/en/literature/product-presentation/highlights-jpmorgan-nasdaq-equity-premium-income-active-ucits-etf.pdf"}]}
+    {"tag":"UITF / PHP LIQUIDITY","title":"ATRAM Peso Money Market Fund - A PHP","thesis":"The required A PHP liquidity sleeve. It supplies rebalancing capital and risk capacity rather than the portfolio's primary growth.","facts":[["Official inception","16 Dec 2013","ATRAM A PHP record"],["All displayed fund fees","0.53%","0.50% trust + 0.03% operating"],["Gross 10Y scenario","4.00% CAGR","Model assumption"],["Net 10Y forecast","3.47% CAGR","Gross minus all displayed fees"],["Observed / forward DD","0.19% / 0.45%","Official NAV / forward median"],["60/40 composite DD","0.30%","Model output"]],"sources":[{"label":"ATRAM A PHP KIID","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/b168a528-3719-4950-a151-d320edcb5fcc/documents/document-1785918375555-jl8qoww.pdf"}]},
+    {"tag":"FEEDER FUND / GLOBAL EQUITY","title":"ATRAM Global Technology Feeder Fund - A PHP","thesis":"The required A PHP technology sleeve. Its long official NAV record replaces the prior unverified 44% proxy, and its target cost uses the disclosed A-ACC-USD TER.","facts":[["Official inception","30 Apr 2018","ATRAM A PHP record"],["All displayed layered fees","2.44%","1.25% ATRAM/operating + 1.19% target TER"],["Gross 10Y scenario","12.50% CAGR","Model assumption"],["Net 10Y forecast","10.06% CAGR","Gross minus all displayed fees"],["Observed / forward DD","29.28% / 32.00%","Official NAV / forward median"],["60/40 composite DD","30.37%","Model output"]],"sources":[{"label":"ATRAM A PHP KIID","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/8b5a24a5-55c5-4f3c-9fa7-9cb9f86e497c/documents/document-1785919712514-tj3tcwd.pdf"}]},
+    {"tag":"FEEDER FUND / NASDAQ INCOME ETF","title":"ATRAM Nasdaq Equity Income Feeder Fund - A PHP","thesis":"The required A PHP income/growth sleeve. Its short raw-NAV history is paired with a forward median; monthly distributions make the observed NAV drawdown conservative.","facts":[["Official inception","29 Jan 2026","ATRAM A PHP record"],["All displayed layered fees","2.00%","1.65% ATRAM/operating + 0.35% target TER"],["Gross 10Y scenario","9.00% CAGR","Model assumption"],["Net 10Y forecast","7.00% CAGR","Gross minus all displayed fees"],["Observed / forward DD","8.02% / 20.00%","Raw NAV / forward median"],["60/40 composite DD","12.81%","Model output"]],"sources":[{"label":"ATRAM A PHP KIID","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/47030aa3-8521-4da6-8991-3c01011e5814/documents/document-1785917994127-0k9xmii.pdf"}]}
   ],
   "monitor": [
-    {"holding":"ATRAM Peso Money Market Fund - D PHP","score":93,"status":"Relevant - liquidity and risk budget","trigger":"Investigate as not relevant if the verified net yield remains below the portfolio liquidity hurdle for two quarterly reviews, or the mandate/duration changes materially.","cadence":"Daily source check; monthly yield review; quarterly mandate review"},
-    {"holding":"ATRAM Global Technology Feeder Fund - D PHP","score":79,"status":"Relevant - constrained growth sleeve","trigger":"Investigate as not relevant if the target mandate drifts from global technology, verified all-in fees defeat the net forecast, or the 12-month technology signal remains below 3.0 while portfolio DD breaches its cap.","cadence":"Daily source check; monthly macro/fee review; quarterly overlap review"},
+    {"holding":"ATRAM Peso Money Market Fund - A PHP","score":93,"status":"Relevant - liquidity and risk budget","trigger":"Investigate as not relevant if the verified net yield remains below the portfolio liquidity hurdle for two quarterly reviews, or the mandate/duration changes materially.","cadence":"Daily source check; monthly yield review; quarterly mandate review"},
+    {"holding":"ATRAM Global Technology Feeder Fund - A PHP","score":79,"status":"Relevant - constrained growth sleeve","trigger":"Investigate as not relevant if the target mandate drifts from global technology, verified all-in fees defeat the net forecast, or the 12-month technology signal remains below 3.0 while portfolio DD breaches its cap.","cadence":"Daily source check; monthly macro/fee review; quarterly overlap review"},
     {"holding":"Fidelity Global Technology target fund","score":81,"status":"Relevant - underlying technology exposure","trigger":"Investigate as not relevant if technology exposure falls materially below the stated mandate, persistent earnings deterioration breaks the forward case, or concentration risk no longer earns its fee-adjusted return.","cadence":"Monthly factsheet; quarterly holdings and mandate review"},
-    {"holding":"ATRAM Nasdaq Equity Income Feeder Fund - D PHP","score":84,"status":"Relevant - efficient income/growth sleeve","trigger":"Investigate as not relevant if distribution or covered-call implementation changes materially, verified fees defeat the net forecast, or upside participation remains impaired without compensating income.","cadence":"Daily source check; monthly distribution/volatility review; quarterly prospectus review"},
+    {"holding":"ATRAM Nasdaq Equity Income Feeder Fund - A PHP","score":84,"status":"Relevant - income/growth sleeve","trigger":"Investigate as not relevant if distribution or covered-call implementation changes materially, verified fees defeat the net forecast, or upside participation remains impaired without compensating income.","cadence":"Daily source check; monthly distribution/volatility review; quarterly prospectus review"},
     {"holding":"JPM Nasdaq Equity Premium Income target ETF","score":82,"status":"Relevant - option-premium engine","trigger":"Investigate as not relevant if the options overlay no longer supports income/volatility objectives, benchmark exposure drifts materially, or liquidity and tracking behavior deteriorate persistently.","cadence":"Monthly ETF data; quarterly strategy and expense review"}
   ],
   "sources": [
-    {"name":"ATRAM official fund portal","detail":"Required fund classes, inception dates, fees, NAV metadata, mandates and target vehicles.","url":"https://www.atram.com.ph/"},
+    {"name":"ATRAM Peso Money Market A PHP KIID","detail":"Official A PHP class, complete displayed fee table, inception, mandate and NAV disclosure.","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/b168a528-3719-4950-a151-d320edcb5fcc/documents/document-1785918375555-jl8qoww.pdf"},
+    {"name":"ATRAM Global Technology A PHP KIID","detail":"Official A PHP fee table, target A-ACC-USD TER, inception, mandate and NAV disclosure.","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/8b5a24a5-55c5-4f3c-9fa7-9cb9f86e497c/documents/document-1785919712514-tj3tcwd.pdf"},
+    {"name":"ATRAM Nasdaq Equity Income A PHP KIID","detail":"Official A PHP fee table, target ETF TER, inception, distribution and strategy disclosure.","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/47030aa3-8521-4da6-8991-3c01011e5814/documents/document-1785917994127-0k9xmii.pdf"},
     {"name":"Fidelity Global Technology Fund","detail":"Official target-fund objective, fee, performance, volatility and holdings factsheet.","url":"https://www.fidelityinternational.com/legal/documents/SG-en/hffs.SG-en.SG.G-TEC.pdf"},
     {"name":"JPM Nasdaq Equity Premium Income ETF","detail":"Official target-ETF strategy, expense ratio, risks and covered-call methodology.","url":"https://am.jpmorgan.com/content/dam/jpm-am-aem/asiapacific/sg/en/literature/product-presentation/highlights-jpmorgan-nasdaq-equity-premium-income-active-ucits-etf.pdf"},
     {"name":"BSP and Federal Reserve","detail":"Primary Philippine and US policy, liquidity, inflation and FX context.","url":"https://www.bsp.gov.ph/"},

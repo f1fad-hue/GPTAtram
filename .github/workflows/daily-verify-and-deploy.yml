@@ -34,9 +34,9 @@ jobs:
           test -f index.html && test -f app.js && test -f styles.css
           grep -q 'Monte Carlo' index.html
           grep -q 'Fed policy, US real yields and liquidity' data/portfolio.json
-          grep -q 'ATRAM Peso Money Market Fund - D PHP' data/portfolio.json
-          grep -q 'ATRAM Global Technology Feeder Fund - D PHP' data/portfolio.json
-          grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - D PHP' data/portfolio.json
+          grep -q 'ATRAM Peso Money Market Fund - A PHP' data/portfolio.json
+          grep -q 'ATRAM Global Technology Feeder Fund - A PHP' data/portfolio.json
+          grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4

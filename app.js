@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260813-2', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260813-3', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -118,7 +118,7 @@ function renderDrawdownMath(data, macroRate, portfolioDd) {
     const allocation = data.portfolio.allocation.find((item) => item.id === fund.id);
     return `<tr><td>${allocation.name}</td><td>${fund.historical.toFixed(2)}%</td><td>${fund.forwardMedian.toFixed(2)}%</td><td><b>${(composites[fund.id] * 100).toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
   }).join('');
-  $('#dd-math').innerHTML = `<p class="eyebrow">60 / 40 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Fund composite = 60% historical/proxy DD + 40% forward 10-year median DD.</p><div class="scroll"><table><thead><tr><th>Fund</th><th>Historical / proxy</th><th>Forward median</th><th>60/40 composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio DD = sqrt(ΣᵢΣⱼ wᵢ·DDᵢ·wⱼ·DDⱼ·ρᵢⱼ). Correlations: money/tech 0.10, money/Nasdaq 0.10, tech/Nasdaq 0.80. Forward medians and proxy inputs are model assumptions, not predictions.</p>`;
+  $('#dd-math').innerHTML = `<p class="eyebrow">60 / 40 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Fund composite = 60% observed A PHP NAV DD + 40% forward 10-year median DD.</p><div class="scroll"><table><thead><tr><th>Fund</th><th>Observed NAV DD</th><th>Forward median</th><th>60/40 composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio DD = sqrt(ΣᵢΣⱼ wᵢ·DDᵢ·wⱼ·DDⱼ·ρᵢⱼ). Correlations: money/tech 0.10, money/Nasdaq 0.10, tech/Nasdaq 0.80. Nasdaq's short raw-NAV history is not distribution-adjusted; forward medians and correlations are model assumptions.</p>`;
 }
 
 function renderDonut(node, allocation) {

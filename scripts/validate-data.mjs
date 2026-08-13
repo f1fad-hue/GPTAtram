@@ -8,6 +8,7 @@ const close = (left, right, tolerance = 0.011) => Math.abs(left - right) <= tole
 
 const ids = data.portfolio.allocation.map((item) => item.id);
 if (ids.length !== 3 || new Set(ids).size !== 3 || !['money','tech','nasdaq'].every((id) => ids.includes(id))) fail('Active allocation must include all three required funds exactly once.');
+if (data.portfolio.allocation.some((item) => !item.name.endsWith('A PHP'))) fail('Every active holding must use the required A PHP unit class.');
 if (sum(data.portfolio.allocation.map((item) => item.weight)) !== 100) fail('Active allocation must total 100%.');
 if (data.portfolio.allocation.some((item) => item.weight < data.optimizer.minimumFundWeight || item.weight % data.optimizer.gridStep !== 0)) fail('Active weights must include every fund and use the configured 5% grid.');
 
@@ -16,6 +17,8 @@ for (const fund of data.fundModels) {
   if (!close(fund.netCagr, fund.grossCagr - fund.wrapperFee - fund.targetFee, 1e-9)) fail(`${fund.id}: net CAGR must equal gross scenario minus wrapper and target fees.`);
   if (!fund.feeBasis || !Array.isArray(fund.sourceIds) || fund.sourceIds.length === 0) fail(`${fund.id}: fee basis and authoritative sources are required.`);
 }
+const requiredFeeSources = { money:'atramMoneyKiid', tech:'atramTechKiid', nasdaq:'atramNasdaqKiid' };
+for (const fund of data.fundModels) if (!fund.sourceIds.includes(requiredFeeSources[fund.id])) fail(`${fund.id}: fees must map to its official A PHP KIID.`);
 
 if (data.drivers.length !== 10) fail('Macro model must use exactly ten non-overlapping portfolio-relevant drivers.');
 if (new Set(data.drivers.map((driver) => driver.id)).size !== data.drivers.length) fail('Macro driver IDs must be unique.');
@@ -30,7 +33,8 @@ const expectedCap = macroRate < 4 ? 20 : macroRate < 5 ? 25 : 30;
 if (data.portfolio.drawdownCap !== expectedCap) fail(`Rate ${macroRate.toFixed(2)} requires a ${expectedCap}% DD cap.`);
 
 const ddModel = data.drawdownModel;
-if (ddModel?.weights.historical !== 0.60 || ddModel?.weights.forwardMedian !== 0.40) fail('DD composite must remain exactly 60% historical/proxy and 40% forward median.');
+if (ddModel?.weights.historical !== 0.60 || ddModel?.weights.forwardMedian !== 0.40) fail('DD composite must remain exactly 60% observed A PHP raw-NAV DD and 40% forward median.');
+if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !fund.historicalBasis.includes('official'))) fail('Every historical DD input must document its official ATRAM NAV basis.');
 const compositeDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, (fund.historical * 0.60 + fund.forwardMedian * 0.40) / 100]));
 const correlations = ddModel.correlations;
 function portfolioDd(allocation) {
