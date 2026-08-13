@@ -30,13 +30,16 @@ jobs:
           node --check scripts/validate-data.mjs
           node --check scripts/authoritative-audit.mjs
           node --check scripts/validate-target-dd.mjs
-          node --check scripts/validate-drawdown-p90.mjs
+          node --check scripts/validate-drawdown-p50.mjs
           node --check scripts/validate-monte-carlo.mjs
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
           test -f index.html && test -f app.js && test -f styles.css
           grep -q 'Monte Carlo' index.html
-          grep -q 'Fed policy, US real yields and liquidity' data/portfolio.json
+          grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
+          grep -q 'Philippine inflation and real cash carry' data/portfolio.json
+          grep -q 'US real yields and Treasury curve' data/portfolio.json
+          grep -q 'Twelve is the optimized coverage ceiling' data/portfolio.json
           grep -q 'ATRAM Peso Money Market Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Global Technology Feeder Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json
@@ -45,8 +48,9 @@ jobs:
           grep -q '46654Q203' data/portfolio.json
           grep -q 'JEPQ is excluded from CAGR and used only for DD' data/portfolio.json
           grep -q '30% × official UCITS target annualized total return 18.15%' data/portfolio.json
-          grep -q 'Fidelity target simulated 10-year P90 maximum DD' data/portfolio.json
-          grep -q 'JEPQ-only proxy simulated 10-year P90 maximum DD' data/portfolio.json
+          grep -q 'Active DD: Fidelity target simulated 10-year P50 median maximum DD' data/portfolio.json
+          grep -q 'Active DD: JEPQ-proxy simulated 10-year P50 median maximum DD' data/portfolio.json
+          grep -q '"basis":"forwardP50Only"' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4

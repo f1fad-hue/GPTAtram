@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260813-10', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260813-12', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -48,8 +48,8 @@ fetch('data/portfolio.json?v=20260813-10', { cache: 'no-store' }).then((response
   $('#drawdown').textContent = fmt(portfolioDd, 2);
   $('#path-count').textContent = data.monteCarlo.paths.toLocaleString();
   $('#allocation-constraint').innerHTML = `Rate <b>${macroRate.toFixed(2)}</b> selects the <b>${portfolio.rateBand}</b> band and <b>${portfolio.drawdownCap}%</b> DD cap.`;
-  $('#rationale-copy').textContent = `The 5%-grid optimizer includes all three required funds and selects the highest net-CAGR mix: ${calculatedCagr.toFixed(2)}% forecast CAGR with ${portfolioDd.toFixed(2)}% composite DD.`;
-  $('#report-summary').innerHTML = `The active rate is <b>${macroRate.toFixed(2)} / 5 (${portfolio.ratingLabel})</b>. The optimized allocation forecasts <b>${calculatedCagr.toFixed(2)}% net CAGR</b> and <b>${portfolioDd.toFixed(2)}% composite DD</b>. Forecasts and forward DD values are model assumptions, not promises or observed facts.`;
+  $('#rationale-copy').textContent = `The 5%-grid optimizer includes all three required funds and selects the highest net-CAGR mix: ${calculatedCagr.toFixed(2)}% forecast CAGR with ${portfolioDd.toFixed(2)}% P50 10-year forward maximum drawdown.`;
+  $('#report-summary').innerHTML = `The active rate is <b>${macroRate.toFixed(2)} / 5 (${portfolio.ratingLabel})</b>. The optimized allocation forecasts <b>${calculatedCagr.toFixed(2)}% net CAGR</b> and <b>${portfolioDd.toFixed(2)}% P50 10-year forward maximum drawdown</b>. Historical DD is context only. Forecasts and forward DD values are model assumptions, not promises or observed facts.`;
   $('#as-of').textContent = new Date(`${data.asOf}T00:00:00`).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
 
   renderDonut($('#active-donut'), portfolio.allocation);
@@ -93,17 +93,16 @@ function calculateMacroRate(data) {
   return data.drivers.reduce((total, driver) => total + (driver.values[0] * horizons.threeMonth + driver.values[1] * horizons.sixMonth + driver.values[2] * horizons.twelveMonth) * data.macroModel.driverWeights[driver.id], 0);
 }
 
-function calculateFundComposites(data) {
-  const model = data.drawdownModel;
-  return Object.fromEntries(model.funds.map((fund) => [fund.id, (fund.historical * model.weights.historical + fund.forwardP90 * model.weights.forwardP90) / 100]));
+function calculateFundDrawdowns(data) {
+  return Object.fromEntries(data.drawdownModel.funds.map((fund) => [fund.id, fund.forwardP50 / 100]));
 }
 
 function calculatePortfolioDrawdown(data, allocationValues) {
   const ids = data.portfolio.allocation.map((item) => item.id);
   const weights = Object.fromEntries(ids.map((id, index) => [id, allocationValues[index] / 100]));
-  const composites = calculateFundComposites(data);
+  const fundDrawdowns = calculateFundDrawdowns(data);
   let variance = 0;
-  for (const left of ids) for (const right of ids) variance += weights[left] * composites[left] * weights[right] * composites[right] * data.drawdownModel.correlations[left][right];
+  for (const left of ids) for (const right of ids) variance += weights[left] * fundDrawdowns[left] * weights[right] * fundDrawdowns[right] * data.drawdownModel.correlations[left][right];
   return Math.sqrt(variance) * 100;
 }
 
@@ -113,12 +112,11 @@ function calculatePortfolioCagr(data, allocationValues) {
 }
 
 function renderDrawdownMath(data, macroRate, portfolioDd) {
-  const composites = calculateFundComposites(data);
   const rows = data.drawdownModel.funds.map((fund) => {
     const allocation = data.portfolio.allocation.find((item) => item.id === fund.id);
-    return `<tr><td>${allocation.name}<br><small>${fund.historicalMetric}<br>${fund.forwardMetric}</small></td><td>${fund.historical.toFixed(2)}%</td><td>${fund.forwardP90.toFixed(2)}%</td><td><b>${(composites[fund.id] * 100).toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
+    return `<tr><td>${allocation.name}<br><small>${fund.historicalMetric}<br>${fund.forwardMetric}</small></td><td>${fund.historical.toFixed(2)}%</td><td><b>${fund.forwardP50.toFixed(2)}%</b></td><td>${allocation.weight}%</td></tr>`;
   }).join('');
-  $('#dd-math').innerHTML = `<p class="eyebrow">60 / 40 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% composite DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Fund composite = 60% historical maximum DD + 40% simulated forward P90 maximum DD for the documented underlying or proxy vehicle. Money Market uses its own fund because it has no target.</p><div class="scroll"><table><thead><tr><th>Fund / DD basis</th><th>Historical input</th><th>Forward P90</th><th>60/40 composite</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio DD = sqrt(ΣᵢΣⱼ wᵢ·DDᵢ·wⱼ·DDⱼ·ρᵢⱼ). Fidelity uses the exact 31.66% daily NAV MDD of target share class LU1046421795. Nasdaq uses U.S. JEPQ's official 21.69% daily raw-NAV MDD as a longer-history proxy; it is not distribution-adjusted. Forward P90 is a reproducible 50,000-path monthly-lognormal model estimate, not an official forecast. Correlations are model assumptions.</p>`;
+  $('#dd-math').innerHTML = `<p class="eyebrow">FORWARD P50 DRAWDOWN MATH</p><h2>${portfolioDd.toFixed(2)}% P50 10-year forward maximum DD <span>vs ${data.portfolio.drawdownCap}% cap</span></h2><p>Rate <b>${macroRate.toFixed(2)} / 5</b> selects the ${data.portfolio.rateBand} band. Each fund's allocation DD equals only its simulated P50 10-year forward maximum drawdown. Historical maximum DD has zero weight and is displayed only for context.</p><div class="scroll"><table><thead><tr><th>Fund / DD basis</th><th>Historical context</th><th>Active forward P50 DD</th><th>Allocation</th></tr></thead><tbody>${rows}</tbody></table></div><p class="caption">Portfolio P50 DD = sqrt(ΣᵢΣⱼ wᵢ·P50DDᵢ·wⱼ·P50DDⱼ·ρᵢⱼ). Forward P50 is an independently seeded 50,000-path monthly-lognormal median estimate over 120 months, not an official forecast. Fidelity supplies the Technology target basis; U.S. JEPQ supplies only the Nasdaq DD proxy. Historical DD does not enter this formula. Correlations are model assumptions.</p>`;
 }
 
 function renderDonut(node, allocation) {

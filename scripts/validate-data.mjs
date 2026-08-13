@@ -25,10 +25,11 @@ const targetFeeAdjustment = 0.70 * 0.35;
 if (!close(nasdaqCagr.grossCagr, targetBasedGross, 1e-9) || !close(nasdaqCagr.targetFee, targetFeeAdjustment, 1e-9) || !close(nasdaqCagr.netCagr, 8.24, 1e-9)) fail('Nasdaq CAGR must use the approved target-based formula: 30% UCITS official total return + 70% JPM LTCMA, less only the non-embedded target fee and complete ATRAM wrapper fees.');
 if (!nasdaqCagr.returnBasis?.includes('IE000U9J8HX9') || !nasdaqCagr.returnBasis?.includes('JEPQ is excluded from CAGR') || !['atramNasdaqKiid','jpmNasdaqFactsheet','jpmLtcma'].every((id) => nasdaqCagr.sourceIds.includes(id)) || nasdaqCagr.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must map to the actual UCITS target and LTCMA, never JEPQ history.');
 
-if (data.drivers.length !== 10) fail('Macro model must use exactly ten non-overlapping portfolio-relevant drivers.');
+if (data.drivers.length !== 12) fail('Macro model must use exactly twelve distinct portfolio-relevant drivers.');
 if (new Set(data.drivers.map((driver) => driver.id)).size !== data.drivers.length) fail('Macro driver IDs must be unique.');
 if (data.drivers.some((driver) => driver.values.length !== 3 || driver.values.some((value) => value < 1 || value > 5))) fail('Macro values must be 1-5 across 3/6/12 months.');
 if (data.drivers.some((driver) => !driver.relevance || !driver.sourceIds?.length || !(driver.id in data.macroModel.driverWeights))) fail('Every macro driver must document relevance, sources and a model weight.');
+if (!data.macroModel.selectionRule?.includes('Twelve') || !data.macroModel.selectionRule.includes('duplicate')) fail('Macro model must document the twelve-driver non-duplication ceiling.');
 const horizonWeights = data.macroModel.horizonWeights;
 const driverWeights = data.macroModel.driverWeights;
 if (!close(sum(Object.values(horizonWeights)), 1, 1e-9) || !close(sum(Object.values(driverWeights)), 1, 1e-9)) fail('Macro horizon and driver weights must each total 100%.');
@@ -41,22 +42,23 @@ const expectedRateBand = macroRate < 4 ? '3.00-3.99' : macroRate < 5 ? '4.00-4.9
 if (data.portfolio.rateBand !== expectedRateBand) fail(`Rate ${macroRate.toFixed(2)} requires the ${expectedRateBand} stored rate band.`);
 
 const ddModel = data.drawdownModel;
-if (ddModel?.weights.historical !== 0.60 || ddModel?.weights.forwardP90 !== 0.40) fail('DD composite must remain exactly 60% authoritative target/own-fund historical maximum DD and 40% simulated forward P90 maximum DD.');
-if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !Number.isFinite(fund.forwardP50Calibration) || !Number.isFinite(fund.forwardP90) || !Number.isFinite(fund.annualVolatilityPct) || fund.forwardP90 <= fund.forwardP50Calibration || !fund.historicalBasis || !fund.historicalMetric || !fund.forwardMetric || !fund.forwardBasis || !fund.sourceIds?.length)) fail('Every DD input must document valid historical, calibrated P50 and forward P90 inputs, model volatility, basis and authoritative source.');
-if (ddModel.simulation?.calibrationPaths !== 10000 || ddModel.simulation?.validationPaths !== 50000 || ddModel.simulation?.months !== 120 || ddModel.simulation?.percentile !== 0.90 || !Number.isInteger(ddModel.simulation?.calibrationSeed) || !Number.isInteger(ddModel.simulation?.validationSeed)) fail('P90 DD simulation must document the reproducible 10,000-path calibration and independent 50,000-path validation over 120 months.');
+if (ddModel?.basis !== 'forwardP50Only' || 'weights' in ddModel) fail('DD must use only forward-looking P50 median maximum drawdown; weighted composite DD is prohibited.');
+if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !Number.isFinite(fund.forwardP50Calibration) || !Number.isFinite(fund.forwardP50) || !Number.isFinite(fund.annualVolatilityPct) || !fund.historicalBasis || !fund.historicalMetric || !fund.forwardMetric || !fund.forwardBasis || !fund.sourceIds?.length)) fail('Every DD input must document historical context, calibrated P50, independent forward P50, model volatility, basis and authoritative source.');
+if (ddModel.simulation?.calibrationPaths !== 10000 || ddModel.simulation?.validationPaths !== 50000 || ddModel.simulation?.months !== 120 || ddModel.simulation?.percentile !== 0.50 || !Number.isInteger(ddModel.simulation?.calibrationSeed) || !Number.isInteger(ddModel.simulation?.validationSeed)) fail('P50 DD simulation must document the reproducible 10,000-path calibration and independent 50,000-path validation over 120 months.');
 const ddFunds = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund]));
 if (!ddFunds.money.historicalBasis.includes('no target vehicle') || !ddFunds.money.sourceIds.includes('atramMoneyKiid')) fail('Money-market DD must use its own official A PHP NAV because it has no target vehicle.');
 if (!close(ddFunds.tech.historical, 31.6614, 1e-6) || !ddFunds.tech.historicalBasis.includes('LU1046421795') || !ddFunds.tech.historicalBasis.includes('3,203') || !ddFunds.tech.historicalBasis.includes('19 Feb 2020') || !ddFunds.tech.historicalBasis.includes('18 Mar 2020') || !ddFunds.tech.historicalMetric.includes('daily NAV maximum drawdown') || !ddFunds.tech.sourceIds.includes('fidelityNav')) fail('Technology DD must use the exact Fidelity A-ACC-USD official daily NAV maximum drawdown and document its record count, peak and trough.');
 if (!ddFunds.nasdaq.historicalBasis.includes('JEPQ') || !ddFunds.nasdaq.historicalBasis.includes('46654Q203') || !ddFunds.nasdaq.historicalBasis.includes('1,072') || !ddFunds.nasdaq.historicalBasis.includes('not distribution-adjusted') || !ddFunds.nasdaq.historicalBasis.includes('actual UCITS target IE000U9J8HX9') || !ddFunds.nasdaq.historicalMetric.includes('raw-NAV') || !ddFunds.nasdaq.sourceIds.includes('jepqHistory')) fail('Nasdaq DD must use official daily JEPQ raw-NAV history as a disclosed, non-distribution-adjusted proxy while preserving the actual UCITS target identity.');
-if (!ddFunds.tech.forwardBasis.includes('LU1046421795') || !ddFunds.tech.forwardMetric.includes('Fidelity target') || !ddFunds.tech.forwardMetric.includes('P90')) fail('Technology forward P90 DD must be explicitly based on the exact Fidelity target vehicle.');
-if (!ddFunds.nasdaq.forwardBasis.includes('JEPQ') || !ddFunds.nasdaq.forwardBasis.includes('IE000U9J8HX9') || !ddFunds.nasdaq.forwardMetric.includes('proxy') || !ddFunds.nasdaq.forwardMetric.includes('P90')) fail('Nasdaq forward P90 DD must explicitly use JEPQ as a strategy proxy without misidentifying the actual target.');
+if (!ddFunds.tech.forwardBasis.includes('LU1046421795') || !ddFunds.tech.forwardMetric.includes('Fidelity target') || !ddFunds.tech.forwardMetric.includes('P50')) fail('Technology forward P50 DD must be explicitly based on the exact Fidelity target vehicle.');
+if (!ddFunds.nasdaq.forwardBasis.includes('JEPQ') || !ddFunds.nasdaq.forwardBasis.includes('IE000U9J8HX9') || !ddFunds.nasdaq.forwardMetric.includes('proxy') || !ddFunds.nasdaq.forwardMetric.includes('P50')) fail('Nasdaq forward P50 DD must explicitly use JEPQ as a strategy proxy without misidentifying the actual target.');
 if (!ddFunds.nasdaq.forwardBasis.includes('does not supply the CAGR forecast') || ddFunds.nasdaq.sourceIds.includes('jpmNasdaqFactsheet') || ddFunds.nasdaq.sourceIds.includes('jpmLtcma')) fail('Nasdaq DD must use JEPQ only and remain separate from the UCITS-based CAGR model.');
-const compositeDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, (fund.historical * ddModel.weights.historical + fund.forwardP90 * ddModel.weights.forwardP90) / 100]));
+if (ddModel.funds.some((fund) => !fund.historicalBasis.includes('excluded from the allocation DD calculation') || !fund.forwardBasis.includes('sole allocation DD input'))) fail('Historical DD must be context only and forward P50 must be the sole allocation DD input.');
+const forwardDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund.forwardP50 / 100]));
 const correlations = ddModel.correlations;
 function portfolioDd(allocation) {
   const weights = Object.fromEntries(ids.map((id, index) => [id, allocation[index] / 100]));
   let variance = 0;
-  for (const left of ids) for (const right of ids) variance += weights[left] * compositeDd[left] * weights[right] * compositeDd[right] * correlations[left][right];
+  for (const left of ids) for (const right of ids) variance += weights[left] * forwardDd[left] * weights[right] * forwardDd[right] * correlations[left][right];
   return Math.sqrt(variance) * 100;
 }
 const netCagr = Object.fromEntries(data.fundModels.map((fund) => [fund.id, fund.netCagr]));
@@ -104,5 +106,5 @@ if (errors.length) {
   errors.forEach((message) => console.error(`VALIDATION FAILED: ${message}`));
   process.exitCode = 1;
 } else {
-  console.log(`Macro ${macroRate.toFixed(2)}, optimized allocation ${activeAllocation.join('/')}, net CAGR ${calculatedCagr.toFixed(3)}%, composite DD ${calculatedDd.toFixed(2)}%, cap ${expectedCap}%: OK`);
+  console.log(`Macro ${macroRate.toFixed(2)}, optimized allocation ${activeAllocation.join('/')}, net CAGR ${calculatedCagr.toFixed(3)}%, P50 10-year forward maximum DD ${calculatedDd.toFixed(2)}%, cap ${expectedCap}%: OK`);
 }

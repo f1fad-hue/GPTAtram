@@ -58,6 +58,10 @@ function calibrateVolatility({ annualReturn, targetP50, paths, months, seed }) {
   return (lower + upper) / 2;
 }
 
+if (data.drawdownModel.basis !== 'forwardP50Only' || simulation.percentile !== 0.50 || 'weights' in data.drawdownModel) {
+  throw new Error('The active drawdown model must be forward-P50-only with no historical/composite weights.');
+}
+
 for (const [index, fund] of data.drawdownModel.funds.entries()) {
   const annualVolatility = calibrateVolatility({
     annualReturn: netCagr[fund.id],
@@ -73,12 +77,11 @@ for (const [index, fund] of data.drawdownModel.funds.entries()) {
     months: simulation.months,
     seed: simulation.validationSeed + index * 1000
   });
-  const p50 = percentile(drawdowns, 0.50);
-  const p90 = percentile(drawdowns, simulation.percentile);
-  const p95 = percentile(drawdowns, 0.95);
+  const p50 = percentile(drawdowns, simulation.percentile);
   if (Math.abs(p50 - fund.forwardP50Calibration) > 0.25) throw new Error(`${fund.id}: independent P50 ${p50.toFixed(4)}% no longer tracks calibration ${fund.forwardP50Calibration.toFixed(4)}%.`);
   if (Math.abs(annualVolatility * 100 - fund.annualVolatilityPct) > 0.000001) throw new Error(`${fund.id}: stored annual volatility does not reproduce calibration.`);
-  if (Math.abs(p90 - fund.forwardP90) > 0.001) throw new Error(`${fund.id}: stored P90 ${fund.forwardP90.toFixed(6)}% does not reproduce ${p90.toFixed(6)}%.`);
-  if (!(p50 < p90 && p90 < p95)) throw new Error(`${fund.id}: expected P50 < P90 < P95.`);
-  console.log(`${fund.id}: annual volatility ${(annualVolatility * 100).toFixed(8)}%, P50 ${p50.toFixed(6)}%, P90 ${p90.toFixed(6)}%, P95 ${p95.toFixed(6)}% (${simulation.validationPaths.toLocaleString()} paths): OK`);
+  if (Math.abs(p50 - fund.forwardP50) > 0.001) throw new Error(`${fund.id}: stored forward P50 ${fund.forwardP50.toFixed(6)}% does not reproduce ${p50.toFixed(6)}%.`);
+  console.log(`${fund.id}: annual volatility ${(annualVolatility * 100).toFixed(8)}%, P50 10Y max DD ${p50.toFixed(6)}% (${simulation.validationPaths.toLocaleString()} paths): OK`);
 }
+
+console.log('Historical maximum drawdowns carry zero allocation weight: P50-only model OK');
