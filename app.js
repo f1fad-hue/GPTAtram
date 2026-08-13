@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260813-13', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260813-14', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -63,18 +63,7 @@ fetch('data/portfolio.json?v=20260813-13', { cache: 'no-store' }).then((response
   [...document.querySelectorAll('.scenario .donut')].forEach((node, index) => renderDonut(node, data.scenarios[index].allocation.map((weight, colorIndex) => ({ weight, color: colors[colorIndex] }))));
 
   const track = $('#slides-track');
-  track.innerHTML = data.slides.map((slide) => `<article class="slide"><div><p class="eyebrow">${slide.tag}</p><h3>${slide.title}</h3><p>${slide.thesis}</p><div class="slide-links">${slide.sources.map((source) => `<a href="${source.url}" target="_blank" rel="noreferrer">${source.label} ↗</a>`).join('')}</div></div><div class="facts">${slide.facts.map((fact) => `<div class="fact"><span>${fact[0]}</span><b>${fact[1]}</b><span>${fact[2]}</span></div>`).join('')}</div></article>`).join('');
-  let slideIndex = 0;
-  const move = (delta) => {
-    slideIndex = (slideIndex + delta + data.slides.length) % data.slides.length;
-    track.style.transform = `translateX(-${slideIndex * 100}%)`;
-    $('#slide-counter').textContent = `${slideIndex + 1} / ${data.slides.length}`;
-  };
-  $('#next').onclick = () => move(1);
-  $('#prev').onclick = () => move(-1);
-  let touchStart = 0;
-  track.addEventListener('touchstart', (event) => { touchStart = event.touches[0].clientX; }, { passive:true });
-  track.addEventListener('touchend', (event) => { const distance = event.changedTouches[0].clientX - touchStart; if (Math.abs(distance) > 45) move(distance < 0 ? 1 : -1); }, { passive:true });
+  track.innerHTML = data.slides.map((slide) => `<article class="slide panel"><div><p class="eyebrow">${slide.tag}</p><h3>${slide.title}</h3><p>${slide.thesis}</p><div class="slide-links">${slide.sources.map((source) => `<a href="${source.url}" target="_blank" rel="noreferrer">${source.label} ↗</a>`).join('')}</div></div><div class="facts">${slide.facts.map((fact) => `<div class="fact"><span>${fact[0]}</span><b>${fact[1]}</b><span>${fact[2]}</span></div>`).join('')}</div></article>`).join('');
 
   $('#monitor-table tbody').innerHTML = data.monitor.map((item) => `<tr><td>${item.holding}<br><span class="score">Relevance ${item.score}/100</span></td><td>${item.status}</td><td>${item.trigger}</td><td>${item.cadence}</td></tr>`).join('');
   $('#source-list').innerHTML = data.sources.map((source) => `<div class="source"><b>${source.name}</b><span>${source.detail}</span><a href="${source.url}" target="_blank" rel="noreferrer">Open official source ↗</a></div>`).join('');

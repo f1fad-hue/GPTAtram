@@ -1,0 +1,78 @@
+.slides {
+  padding: 0;
+  overflow: visible;
+}
+
+.slides-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+  transform: none !important;
+}
+
+.slide {
+  min-width: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.slide h3 {
+  margin: .1em 0;
+  font-size: 1.25rem;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.slide p {
+  font-size: .8rem;
+}
+
+.slide-links {
+  gap: 8px;
+}
+
+.slide-links a {
+  font-size: .72rem;
+}
+
+.slide .facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-content: start;
+  margin-top: auto;
+}
+
+.slide .fact {
+  min-width: 0;
+  padding: 10px;
+}
+
+.slide .fact span {
+  font-size: .64rem;
+}
+
+.slide .fact b {
+  display: block;
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .slides-track {
+    grid-template-columns: 1fr;
+  }
+
+  .slide {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 410px) {
+  .slide .facts {
+    grid-template-columns: 1fr 1fr;
+  }
+}

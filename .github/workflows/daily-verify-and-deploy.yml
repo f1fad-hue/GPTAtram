@@ -34,7 +34,9 @@ jobs:
           node --check scripts/validate-monte-carlo.mjs
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
-          test -f index.html && test -f app.js && test -f styles.css
+          test -f index.html && test -f app.js && test -f styles.css && test -f fund-grid.css
+          grep -q 'Fee, CAGR and DD — side by side' index.html
+          ! grep -q 'slide-controls' index.html
           grep -q 'Monte Carlo' index.html
           grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
           grep -q 'Philippine inflation and real cash carry' data/portfolio.json
