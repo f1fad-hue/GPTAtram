@@ -5,12 +5,12 @@
     "rateBand": "3.00-3.99",
     "ratingLabel": "constructive",
     "drawdownCap": 20,
-    "netCagrForecast": 8.218,
+    "netCagrForecast": 8.0925,
     "volatility": 0.15,
     "allocation": [
-      {"id":"money","name":"ATRAM Peso Money Market Fund - A PHP","weight":10,"color":"#7ac943"},
-      {"id":"tech","name":"ATRAM Global Technology Feeder Fund - A PHP","weight":25,"color":"#12a8c4"},
-      {"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder Fund - A PHP","weight":65,"color":"#f29b38"}
+      {"id":"money","name":"ATRAM Peso Money Market Fund - A PHP","weight":5,"color":"#7ac943"},
+      {"id":"tech","name":"ATRAM Global Technology Feeder Fund - A PHP","weight":5,"color":"#12a8c4"},
+      {"id":"nasdaq","name":"ATRAM Nasdaq Equity Income Feeder Fund - A PHP","weight":90,"color":"#f29b38"}
     ]
   },
   "optimizer": {
@@ -32,14 +32,14 @@
   },
   "drawdownModel": {
     "basis":"forwardP50Only",
-    "formula":"Fund DD equals only the simulated forward-looking median (P50) 10-year maximum drawdown for the documented underlying or proxy vehicle. Historical maximum drawdown is displayed for context but has zero weight in allocation and cap calculations. Portfolio DD applies allocation weights and correlations to the P50 fund DDs.",
+    "aggregation":"simpleWeightedSum",
+    "formula":"Fund DD equals only the simulated forward-looking median (P50) 10-year maximum drawdown for the documented underlying or proxy vehicle. Historical maximum drawdown is displayed for context but has zero weight in allocation and cap calculations. Portfolio DD is the simple sum of each allocation weight multiplied by its P50 fund DD, with no diversification or correlation credit.",
     "simulation":{"calibrationPaths":10000,"validationPaths":50000,"months":120,"calibrationSeed":20260813,"validationSeed":20260814,"distribution":"monthly lognormal","percentile":0.50,"method":"Annual volatility is calibrated so a deterministic 10,000-path run reproduces the documented P50 DD target; forward P50 is then measured with an independent-seed 50,000-path run and used as the sole DD input."},
     "funds":[
       {"id":"money","historical":0.1932,"forwardP50Calibration":0.45,"forwardP50":0.450474,"annualVolatilityPct":0.92583132,"historicalBasis":"Official ATRAM A PHP NAV maximum drawdown from 3,076 records, 16 Dec 2013 to 11 Aug 2026 because it has no target vehicle; shown for context only and excluded from the allocation DD calculation.","historicalMetric":"Context: own-fund historical daily NAV maximum drawdown","forwardMetric":"Active DD: own-fund simulated 10-year P50 median maximum DD","sourceIds":["atramMoneyKiid"],"forwardBasis":"ATRAM Peso Money Market Fund A PHP monthly-lognormal model estimate; independent 50,000-path P50 after volatility calibration to the 0.45% median DD target. This P50 model output is the sole allocation DD input, not an official forecast."},
       {"id":"tech","historical":31.6614,"forwardP50Calibration":32.00,"forwardP50":31.776981,"annualVolatilityPct":18.16807266,"historicalBasis":"Official Fidelity Global Technology Fund A-ACC-USD (ISIN LU1046421795) daily NAV maximum drawdown from 3,203 manager-chart observations, 9 Apr 2014 to 12 Aug 2026; NAV peak 28.71 on 19 Feb 2020 and trough 19.62 on 18 Mar 2020. Shown for context only and excluded from the allocation DD calculation.","historicalMetric":"Context: target-fund historical daily NAV maximum drawdown","forwardMetric":"Active DD: Fidelity target simulated 10-year P50 median maximum DD","sourceIds":["fidelityNav","fidelity"],"forwardBasis":"Fidelity Global Technology Fund A-ACC-USD (ISIN LU1046421795) monthly-lognormal model estimate; independent 50,000-path P50 after volatility calibration to the 32.00% median DD target. This P50 model output is the sole allocation DD input, not an official forecast."},
       {"id":"nasdaq","historical":21.6911,"forwardP50Calibration":20.00,"forwardP50":20.017581,"annualVolatilityPct":12.06652540,"historicalBasis":"Official U.S.-listed JPMorgan Nasdaq Equity Premium Income ETF (JEPQ, CUSIP 46654Q203) daily NAV maximum drawdown from 1,072 manager-published observations, 4 May 2022 to 12 Aug 2026; peak 19 Feb 2025, trough 8 Apr 2025. This raw-NAV measure is not distribution-adjusted. JEPQ is a disclosed proxy; the actual UCITS target IE000U9J8HX9 remains separately identified. Shown for context only and excluded from the allocation DD calculation.","historicalMetric":"Context: JEPQ historical daily raw-NAV maximum drawdown","forwardMetric":"Active DD: JEPQ-proxy simulated 10-year P50 median maximum DD","sourceIds":["jepqHistory","jpmorgan"],"forwardBasis":"U.S.-listed JEPQ monthly-lognormal DD-proxy model estimate; independent 50,000-path P50 after volatility calibration to the 20.00% median DD target. This P50 model output is the sole allocation DD input. JEPQ does not supply the CAGR forecast; the CAGR model uses actual UCITS target IE000U9J8HX9."}
-    ],
-    "correlations":{"money":{"money":1,"tech":0.10,"nasdaq":0.10},"tech":{"money":0.10,"tech":1,"nasdaq":0.80},"nasdaq":{"money":0.10,"tech":0.80,"nasdaq":1}}
+    ]
   },
   "monteCarlo": {"paths":10000,"months":120,"seed":20260813,"distribution":"monthly lognormal"},
   "drivers": [
@@ -57,9 +57,9 @@
     {"id":"globalDemand","name":"Global growth and technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth","sourceIds":["worldbank"]}
   ],
   "scenarios": [
-    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.95,"netCagr":8.218,"allocation":[10,25,65]},
-    {"rate":"4.00-4.99","label":"Bullish","cap":25,"dd":24.36,"netCagr":9.0025,"allocation":[5,55,40]},
-    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":29.41,"netCagr":9.6395,"allocation":[5,90,5]}
+    {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.62719565,"netCagr":8.0925,"allocation":[5,5,90]},
+    {"rate":"4.00-4.99","label":"Bullish","cap":25,"dd":24.91892565,"netCagr":8.9115,"allocation":[5,50,45]},
+    {"rate":"5.00","label":"Maximum bullish","cap":30,"dd":29.62268565,"netCagr":9.6395,"allocation":[5,90,5]}
   ],
   "slides": [
     {"tag":"UITF / PHP LIQUIDITY","title":"ATRAM Peso Money Market Fund - A PHP","thesis":"This fund has no target vehicle, so its own gross scenario is used before the complete A PHP fee deduction. Allocation DD uses only forward P50.","facts":[["Official inception","16 Dec 2013","ATRAM A PHP record"],["Target-level forecast","Not applicable","No target fund"],["Own-fund gross scenario","4.00% CAGR","Model assumption"],["Complete A PHP fees","0.53%","0.50% trust + 0.03% operating"],["Fully net 10Y forecast","3.47% CAGR","4.00% − 0.53%"],["Historical DD (context)","0.19%","Official NAV; zero allocation weight"],["Forward P50 DD (active)","0.45%","50,000-path median model"]],"sources":[{"label":"ATRAM A PHP KIID","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/b168a528-3719-4950-a151-d320edcb5fcc/documents/document-1785918375555-jl8qoww.pdf"}]},

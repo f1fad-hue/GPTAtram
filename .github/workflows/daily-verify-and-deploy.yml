@@ -55,6 +55,8 @@ jobs:
           grep -q 'Active DD: Fidelity target simulated 10-year P50 median maximum DD' data/portfolio.json
           grep -q 'Active DD: JEPQ-proxy simulated 10-year P50 median maximum DD' data/portfolio.json
           grep -q '"basis":"forwardP50Only"' data/portfolio.json
+          grep -q '"aggregation":"simpleWeightedSum"' data/portfolio.json
+          ! grep -q '"correlations"' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -48,7 +48,7 @@ const expectedRateBand = macroRate < 4 ? '3.00-3.99' : macroRate < 5 ? '4.00-4.9
 if (data.portfolio.rateBand !== expectedRateBand) fail(`Rate ${macroRate.toFixed(2)} requires the ${expectedRateBand} stored rate band.`);
 
 const ddModel = data.drawdownModel;
-if (ddModel?.basis !== 'forwardP50Only' || 'weights' in ddModel) fail('DD must use only forward-looking P50 median maximum drawdown; weighted composite DD is prohibited.');
+if (ddModel?.basis !== 'forwardP50Only' || ddModel?.aggregation !== 'simpleWeightedSum' || 'weights' in ddModel || 'correlations' in ddModel) fail('DD must use the simple allocation-weighted sum of forward-looking P50 median maximum drawdowns, with no historical composite or correlation credit.');
 if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !Number.isFinite(fund.forwardP50Calibration) || !Number.isFinite(fund.forwardP50) || !Number.isFinite(fund.annualVolatilityPct) || !fund.historicalBasis || !fund.historicalMetric || !fund.forwardMetric || !fund.forwardBasis || !fund.sourceIds?.length)) fail('Every DD input must document historical context, calibrated P50, independent forward P50, model volatility, basis and authoritative source.');
 if (ddModel.simulation?.calibrationPaths !== 10000 || ddModel.simulation?.validationPaths !== 50000 || ddModel.simulation?.months !== 120 || ddModel.simulation?.percentile !== 0.50 || !Number.isInteger(ddModel.simulation?.calibrationSeed) || !Number.isInteger(ddModel.simulation?.validationSeed)) fail('P50 DD simulation must document the reproducible 10,000-path calibration and independent 50,000-path validation over 120 months.');
 const ddFunds = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund]));
@@ -60,12 +60,8 @@ if (!ddFunds.nasdaq.forwardBasis.includes('JEPQ') || !ddFunds.nasdaq.forwardBasi
 if (!ddFunds.nasdaq.forwardBasis.includes('does not supply the CAGR forecast') || ddFunds.nasdaq.sourceIds.includes('jpmNasdaqFactsheet') || ddFunds.nasdaq.sourceIds.includes('jpmLtcma')) fail('Nasdaq DD must use JEPQ only and remain separate from the UCITS-based CAGR model.');
 if (ddModel.funds.some((fund) => !fund.historicalBasis.includes('excluded from the allocation DD calculation') || !fund.forwardBasis.includes('sole allocation DD input'))) fail('Historical DD must be context only and forward P50 must be the sole allocation DD input.');
 const forwardDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund.forwardP50 / 100]));
-const correlations = ddModel.correlations;
 function portfolioDd(allocation) {
-  const weights = Object.fromEntries(ids.map((id, index) => [id, allocation[index] / 100]));
-  let variance = 0;
-  for (const left of ids) for (const right of ids) variance += weights[left] * forwardDd[left] * weights[right] * forwardDd[right] * correlations[left][right];
-  return Math.sqrt(variance) * 100;
+  return allocation.reduce((total, weight, index) => total + weight / 100 * forwardDd[ids[index]], 0) * 100;
 }
 const netCagr = Object.fromEntries(data.fundModels.map((fund) => [fund.id, fund.netCagr]));
 function portfolioCagr(allocation) { return allocation.reduce((total, weight, index) => total + netCagr[ids[index]] * weight / 100, 0); }

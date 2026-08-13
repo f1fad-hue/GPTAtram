@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#f5f7fb" />
     <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
     <title>ATRAM Growth Compass</title>
-    <link rel="stylesheet" href="styles.css?v=20260813-14" />
-    <link rel="stylesheet" href="fund-grid.css?v=20260813-14" />
+    <link rel="stylesheet" href="styles.css?v=20260813-15" />
+    <link rel="stylesheet" href="fund-grid.css?v=20260813-15" />
   </head>
   <body>
     <header class="topbar wrap">
@@ -41,15 +41,15 @@
 
       <section class="metrics" aria-label="Portfolio headline metrics">
         <article class="metric"><span>Required funds</span><strong id="allocation-total">3 / 3</strong><small>All included</small></article>
-        <article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">8.22%</strong><small>After all displayed fees</small></article>
-        <article class="metric"><span>P50 10Y forward max DD</span><strong id="drawdown">19.95%</strong><small>Below the 20% cap</small></article>
+        <article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">8.09%</strong><small>After all displayed fees</small></article>
+        <article class="metric"><span>P50 10Y forward max DD</span><strong id="drawdown">19.63%</strong><small>Simple weighted sum; below cap</small></article>
         <article class="metric"><span>Monte Carlo</span><strong id="path-count">10,000</strong><small>120 monthly steps</small></article>
       </section>
 
       <section class="section-heading"><div><p class="eyebrow">THE ANSWER</p><h2>Constrained maximum-growth allocation</h2></div><p id="allocation-constraint">Rate 3.82 selects a 20% DD cap.</p></section>
       <section class="allocation-grid">
         <article class="panel allocation-card"><div class="donut large" id="active-donut" aria-label="Current allocation donut"></div><div id="active-allocation" class="allocation-legend"></div></article>
-        <article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Maximum forecast growth inside the cap.</h3><p id="rationale-copy">The optimizer uses all three funds and selects the highest fee-adjusted CAGR on the allowed 5% grid.</p><ul><li>Nasdaq income becomes the largest sleeve under its target-based CAGR.</li><li>Global technology preserves high-growth exposure.</li><li>Money market keeps forward P50 maximum DD inside the hard cap.</li></ul></article>
+        <article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Maximum forecast growth inside the cap.</h3><p id="rationale-copy">The optimizer uses all three funds and selects the highest fee-adjusted CAGR on the allowed 5% grid.</p><ul><li>Nasdaq income takes 90% because it offers the strongest growth permitted by the Rate 3 risk budget.</li><li>Global Technology and Money Market remain at their required 5% minimums.</li><li>The DD cap uses the conservative simple weighted sum with no diversification credit.</li></ul></article>
       </section>
       <section class="panel dd-math" id="dd-math" aria-label="Drawdown calculation"></section>
 
@@ -73,6 +73,6 @@
       <section class="panel report" id="sources"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion and sources</h2><p id="report-summary">The active model uses a rate-constrained optimizer. Forecasts are model assumptions, not promises or observed facts.</p><div id="source-list" class="source-list"></div><p class="disclaimer">Educational research only; not investment advice. UITFs are not deposits and are not insured by PDIC. Historical results do not guarantee future results. Verify the latest official ATRAM disclosure and suitability before investing.</p></section>
     </main>
     <footer class="wrap"><span>Model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Daily cloud verification: loading</span></footer>
-    <script src="app.js?v=20260813-14"></script>
+    <script src="app.js?v=20260813-15"></script>
   </body>
 </html>

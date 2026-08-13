@@ -58,8 +58,8 @@ function calibrateVolatility({ annualReturn, targetP50, paths, months, seed }) {
   return (lower + upper) / 2;
 }
 
-if (data.drawdownModel.basis !== 'forwardP50Only' || simulation.percentile !== 0.50 || 'weights' in data.drawdownModel) {
-  throw new Error('The active drawdown model must be forward-P50-only with no historical/composite weights.');
+if (data.drawdownModel.basis !== 'forwardP50Only' || data.drawdownModel.aggregation !== 'simpleWeightedSum' || simulation.percentile !== 0.50 || 'weights' in data.drawdownModel || 'correlations' in data.drawdownModel) {
+  throw new Error('The active drawdown model must be forward-P50-only and use a simple weighted sum with no historical/composite weights or correlation credit.');
 }
 
 for (const [index, fund] of data.drawdownModel.funds.entries()) {
