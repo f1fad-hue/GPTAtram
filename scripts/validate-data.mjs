@@ -19,6 +19,11 @@ for (const fund of data.fundModels) {
 }
 const requiredFeeSources = { money:'atramMoneyKiid', tech:'atramTechKiid', nasdaq:'atramNasdaqKiid' };
 for (const fund of data.fundModels) if (!fund.sourceIds.includes(requiredFeeSources[fund.id])) fail(`${fund.id}: fees must map to its official A PHP KIID.`);
+const nasdaqCagr = data.fundModels.find((fund) => fund.id === 'nasdaq');
+const targetBasedGross = 0.30 * 18.15 + 0.70 * 6.70;
+const targetFeeAdjustment = 0.70 * 0.35;
+if (!close(nasdaqCagr.grossCagr, targetBasedGross, 1e-9) || !close(nasdaqCagr.targetFee, targetFeeAdjustment, 1e-9) || !close(nasdaqCagr.netCagr, 8.24, 1e-9)) fail('Nasdaq CAGR must use the approved target-based formula: 30% UCITS official total return + 70% JPM LTCMA, less only the non-embedded target fee and complete ATRAM wrapper fees.');
+if (!nasdaqCagr.returnBasis?.includes('IE000U9J8HX9') || !nasdaqCagr.returnBasis?.includes('JEPQ is excluded from CAGR') || !['atramNasdaqKiid','jpmNasdaqFactsheet','jpmLtcma'].every((id) => nasdaqCagr.sourceIds.includes(id)) || nasdaqCagr.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must map to the actual UCITS target and LTCMA, never JEPQ history.');
 
 if (data.drivers.length !== 10) fail('Macro model must use exactly ten non-overlapping portfolio-relevant drivers.');
 if (new Set(data.drivers.map((driver) => driver.id)).size !== data.drivers.length) fail('Macro driver IDs must be unique.');
@@ -45,6 +50,7 @@ if (!close(ddFunds.tech.historical, 31.6614, 1e-6) || !ddFunds.tech.historicalBa
 if (!ddFunds.nasdaq.historicalBasis.includes('JEPQ') || !ddFunds.nasdaq.historicalBasis.includes('46654Q203') || !ddFunds.nasdaq.historicalBasis.includes('1,072') || !ddFunds.nasdaq.historicalBasis.includes('not distribution-adjusted') || !ddFunds.nasdaq.historicalBasis.includes('actual UCITS target IE000U9J8HX9') || !ddFunds.nasdaq.historicalMetric.includes('raw-NAV') || !ddFunds.nasdaq.sourceIds.includes('jepqHistory')) fail('Nasdaq DD must use official daily JEPQ raw-NAV history as a disclosed, non-distribution-adjusted proxy while preserving the actual UCITS target identity.');
 if (!ddFunds.tech.forwardBasis.includes('LU1046421795') || !ddFunds.tech.forwardMetric.includes('Fidelity target') || !ddFunds.tech.forwardMetric.includes('P90')) fail('Technology forward P90 DD must be explicitly based on the exact Fidelity target vehicle.');
 if (!ddFunds.nasdaq.forwardBasis.includes('JEPQ') || !ddFunds.nasdaq.forwardBasis.includes('IE000U9J8HX9') || !ddFunds.nasdaq.forwardMetric.includes('proxy') || !ddFunds.nasdaq.forwardMetric.includes('P90')) fail('Nasdaq forward P90 DD must explicitly use JEPQ as a strategy proxy without misidentifying the actual target.');
+if (!ddFunds.nasdaq.forwardBasis.includes('does not supply the CAGR forecast') || ddFunds.nasdaq.sourceIds.includes('jpmNasdaqFactsheet') || ddFunds.nasdaq.sourceIds.includes('jpmLtcma')) fail('Nasdaq DD must use JEPQ only and remain separate from the UCITS-based CAGR model.');
 const compositeDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, (fund.historical * ddModel.weights.historical + fund.forwardP90 * ddModel.weights.forwardP90) / 100]));
 const correlations = ddModel.correlations;
 function portfolioDd(allocation) {

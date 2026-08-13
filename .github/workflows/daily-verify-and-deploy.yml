@@ -43,6 +43,8 @@ jobs:
           grep -q 'LU1046421795' data/portfolio.json
           grep -q 'IE000U9J8HX9' data/portfolio.json
           grep -q '46654Q203' data/portfolio.json
+          grep -q 'JEPQ is excluded from CAGR and used only for DD' data/portfolio.json
+          grep -q '30% × official UCITS target annualized total return 18.15%' data/portfolio.json
           grep -q 'Fidelity target simulated 10-year P90 maximum DD' data/portfolio.json
           grep -q 'JEPQ proxy simulated 10-year P90 maximum DD' data/portfolio.json
       - name: Publish the daily audit evidence

@@ -13,11 +13,12 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 - Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
 - Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
 - Net CAGR: gross 10-year scenario minus every ATRAM/operating and target-fund/ETF fee displayed in the official A PHP KIID.
+- Nasdaq role separation: the actual UCITS target IE000U9J8HX9 supplies the CAGR basis; U.S. JEPQ supplies only the longer-history DD proxy. The 8.24% net CAGR blends 30% of the target's official 18.15% annualized total return with 70% of JPM's 6.70% long-term U.S. large-cap assumption, then removes the non-embedded target fee and the complete ATRAM wrapper fee stack.
 - Monte Carlo: 10,000 reproducible monthly-lognormal paths over 120 months.
 - Look-through: the three required ATRAM funds and their official target/proxy vehicles are modeled; the portfolio has no direct-stock holdings, so no unsupported stock sleeve is invented.
 
 The Fidelity target input is the exact daily NAV maximum drawdown calculated from the manager's full official A-ACC-USD chart (LU1046421795): 31.66% from 28.71 on 19 February 2020 to 19.62 on 18 March 2020, across 3,203 observations. The Nasdaq input is JEPQ daily raw-NAV MDD from official JPM manager data and is explicitly labelled as not distribution-adjusted. Forward P90 DD is a reproducible monthly-lognormal model estimate: annual volatility is calibrated so 10,000 deterministic paths reproduce the prior P50 DD assumption, then P90 is measured on an independent 50,000-path run. Forecasts, correlations and simulated percentiles are model assumptions, not promises.
-For the Nasdaq sleeve, the older U.S.-listed JEPQ (CUSIP 46654Q203) supplies the longer strategy-history DD proxy; the actual ATRAM target remains the newer UCITS ETF (ISIN IE000U9J8HX9).
+For the Nasdaq sleeve, the older U.S.-listed JEPQ (CUSIP 46654Q203) supplies only the longer strategy-history DD proxy. The actual ATRAM target UCITS ETF (ISIN IE000U9J8HX9) exclusively supplies the fund-specific return history used in the CAGR model.
 
 ## Verification and publishing
 
