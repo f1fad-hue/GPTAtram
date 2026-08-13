@@ -26,6 +26,26 @@
   min-width: 600px;
 }
 
+.heatmap td:first-child {
+  min-width: 230px;
+}
+
+.heatmap td:first-child small {
+  display: block;
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 500;
+}
+
+.impact {
+  min-width: 52px;
+  border-radius: 8px;
+  padding: 3px 6px;
+  text-align: center;
+  color: #17324d;
+  font-weight: 850;
+}
+
 @media (max-width: 720px) {
   .metrics {
     grid-template-columns: 1fr 1fr;

@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260814-01', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260814-02', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -55,7 +55,7 @@ fetch('data/portfolio.json?v=20260814-01', { cache: 'no-store' }).then((response
   $('#active-allocation').innerHTML = portfolio.allocation.map((item) => `<div class="legend-row"><span><i class="dot" style="background:${item.color}"></i>${item.name}</span><b>${item.weight}%</b></div>`).join('');
   renderDrawdownMath(data, macroRate, portfolioDd);
 
-  $('#heatmap tbody').innerHTML = data.drivers.map((driver) => `<tr><td>${driver.name}</td>${driver.values.map((value) => `<td><div class="heat" style="background:${heatColor(value)}">${value.toFixed(1)}</div></td>`).join('')}<td><b>${(data.macroModel.driverWeights[driver.id] * 100).toFixed(0)}%</b></td><td>${driver.relevance}</td></tr>`).join('');
+  $('#heatmap tbody').innerHTML = data.drivers.map((driver) => `<tr><td><b>${driver.name}</b><small>${driver.channel}</small></td>${driver.values.map((value) => `<td><div class="heat" style="background:${heatColor(value)}">${value.toFixed(1)}</div></td>`).join('')}<td><b>${(data.macroModel.driverWeights[driver.id] * 100).toFixed(0)}%</b></td>${['money','tech','nasdaq'].map((fund) => `<td><div class="impact" style="background:${impactColor(driver.allocationImpact[fund])}" title="${driver.relevance}">${driver.allocationImpact[fund] > 0 ? '+' : ''}${driver.allocationImpact[fund]}</div></td>`).join('')}</tr>`).join('');
 
   const colors = portfolio.allocation.map((item) => item.color);
   $('#scenario-grid').innerHTML = data.scenarios.map((scenario) => `<article class="scenario panel"><header><div><p class="eyebrow">RATE ${scenario.rate}</p><h3>${scenario.label}</h3></div><b>${scenario.cap}% DD cap</b></header><div class="donut" data-label="${scenario.dd.toFixed(2)}% DD · ${scenario.netCagr.toFixed(2)}% CAGR"></div><p>Money ${scenario.allocation[0]}% · Tech ${scenario.allocation[1]}% · Nasdaq ${scenario.allocation[2]}%</p></article>`).join('');
@@ -119,6 +119,7 @@ function renderDonut(node, allocation) {
 }
 
 function heatColor(value) { const hue = 3 + ((value - 1) / 4) * 125; return `hsl(${hue} 70% 43%)`; }
+function impactColor(value) { return ['#cf5963','#e7a74c','#e8eef4','#9ecf75','#52a834'][value + 2]; }
 function rng(seed) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
 function normal(random) { let u = 0; let v = 0; while (!u) u = random(); while (!v) v = random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 function percentile(values, probability) { const index = (values.length - 1) * probability; const low = Math.floor(index); const high = Math.ceil(index); return values[low] + (values[high] - values[low]) * (index - low); }

@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#f5f7fb" />
     <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
     <title>ATRAM Growth Compass</title>
-    <link rel="stylesheet" href="styles.css?v=20260814-01" />
-    <link rel="stylesheet" href="fund-grid.css?v=20260814-01" />
-    <link rel="stylesheet" href="concise.css?v=20260814-01" />
+    <link rel="stylesheet" href="styles.css?v=20260814-02" />
+    <link rel="stylesheet" href="fund-grid.css?v=20260814-02" />
+    <link rel="stylesheet" href="concise.css?v=20260814-02" />
   </head>
   <body>
     <header class="topbar wrap">
@@ -53,8 +53,8 @@
       </section>
       <section class="panel dd-math" id="dd-math" aria-label="Drawdown calculation"></section>
 
-      <section class="section-heading"><div><p class="eyebrow">MACRO SENSITIVITY</p><h2>Only drivers that can change allocations</h2></div><p>Scores run from 1 bearish to 5 bullish; decimals allowed.</p></section>
-      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap" id="heatmap"><thead><tr><th>Driver</th><th>3m</th><th>6m</th><th>12m</th><th>Weight</th><th>Allocation link</th></tr></thead><tbody></tbody></table></div><p class="caption">Time weights: 45% 3-month, 35% 6-month, 20% 12-month. Twelve is the optimized coverage ceiling: every row has a distinct allocation channel and authoritative source; duplicate candidates are excluded.</p></section>
+      <section class="section-heading"><div><p class="eyebrow">MAXIMUM DISTINCT COVERAGE</p><h2>12-driver macro allocation matrix</h2></div><p>Scores: 1 bearish to 5 bullish.</p></section>
+      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap" id="heatmap"><thead><tr><th>Driver / channel</th><th>3m</th><th>6m</th><th>12m</th><th>Weight</th><th>Money</th><th>Tech</th><th>Nasdaq</th></tr></thead><tbody></tbody></table></div><p class="caption"><b>Fund sensitivity:</b> +2 strong increase · +1 increase · 0 neutral · −1 reduce · −2 strong reduce. Sensitivity is the allocation response when a driver’s score becomes more bullish. Twelve is the maximum distinct set; duplicates are excluded.</p></section>
 
       <section class="section-heading"><div><p class="eyebrow">RATES 3 / 4 / 5</p><h2>Optimized allocation scenarios</h2></div><p>Each donut maximizes the same fee-adjusted CAGR objective under its DD cap.</p></section>
       <section class="scenario-grid" id="scenario-grid"></section>
@@ -73,6 +73,6 @@
       <section class="panel report" id="sources"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion and sources</h2><p id="report-summary">The active model uses a rate-constrained optimizer. Forecasts are model assumptions, not promises or observed facts.</p><div id="source-list" class="source-list"></div><p class="disclaimer">Educational research only; not investment advice. UITFs are not deposits and are not insured by PDIC. Historical results do not guarantee future results. Verify the latest official ATRAM disclosure and suitability before investing.</p></section>
     </main>
     <footer class="wrap"><span>Model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Daily cloud verification: loading</span></footer>
-    <script src="app.js?v=20260814-01"></script>
+    <script src="app.js?v=20260814-02"></script>
   </body>
 </html>

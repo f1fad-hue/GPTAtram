@@ -40,7 +40,9 @@ jobs:
           grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
           grep -q 'Philippine inflation and real cash carry' data/portfolio.json
           grep -q 'US real yields and Treasury curve' data/portfolio.json
-          grep -q 'Twelve is the optimized coverage ceiling' data/portfolio.json
+          grep -q 'Twelve is the maximum distinct coverage set' data/portfolio.json
+          grep -q '"maxDistinctDrivers":12' data/portfolio.json
+          grep -q '"allocationImpact"' data/portfolio.json
           grep -q 'ATRAM Peso Money Market Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Global Technology Feeder Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json

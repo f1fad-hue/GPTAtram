@@ -25,10 +25,11 @@
     {"id":"nasdaq","grossCagr":10.135,"targetLevelCagr":9.89,"wrapperFee":1.65,"targetFee":0.245,"netCagr":8.24,"forecastUse":"Use the 9.89% actual-target forecast after the non-embedded 0.245% target-fee adjustment, then deduct the complete 1.65% ATRAM A PHP wrapper/operating fee stack.","feeBasis":"Target-based 10-year model: 30% × official UCITS target annualized total return 18.15% + 70% × JPM 2026 long-term U.S. large-cap return 6.70% = 10.135%; subtract 70% × 0.35% target TER because the official historical return already includes ongoing charges, then subtract the complete 1.65% ATRAM A PHP fee stack.","returnBasis":"Actual target JPM Nasdaq Equity Premium Income Active UCITS ETF USD (dist), IE000U9J8HX9. JEPQ is excluded from CAGR and used only for DD.","sourceIds":["atramNasdaqKiid","jpmNasdaqFactsheet","jpmLtcma"]}
   ],
   "macroModel": {
+    "maxDistinctDrivers":12,
     "horizonWeights":{"threeMonth":0.45,"sixMonth":0.35,"twelveMonth":0.20},
     "driverWeights":{"fedPolicy":0.10,"bspPolicy":0.08,"philippineInflation":0.06,"usInflation":0.07,"usGrowth":0.07,"financialConditions":0.07,"realYieldsCurve":0.09,"technology":0.18,"valuation":0.10,"volatility":0.07,"fx":0.06,"globalDemand":0.05},
     "rateFormula":"Weighted sum of each 3/6/12-month driver composite. Scores are model signals, not observed facts or market predictions.",
-    "selectionRule":"Twelve is the optimized coverage ceiling: retain only distinct drivers backed by authoritative primary sources that can independently change at least one of the three allocations. Additional candidates are rejected when they duplicate an included rate, inflation, growth, liquidity, earnings, valuation, volatility or currency channel."
+    "selectionRule":"Twelve is the maximum distinct coverage set: every driver has an authoritative source, a unique portfolio channel, and a non-zero sensitivity to at least one required fund. Additional candidates are rejected when they duplicate an included rate, inflation, growth, liquidity, earnings, valuation, volatility or currency channel."
   },
   "drawdownModel": {
     "basis":"historicalMaximumDrawdownOnly",
@@ -42,18 +43,18 @@
   },
   "monteCarlo": {"paths":10000,"months":120,"seed":20260813,"distribution":"monthly lognormal"},
   "drivers": [
-    {"id":"fedPolicy","name":"Federal Reserve policy and liquidity","values":[3.8,3.7,3.5],"relevance":"Equity liquidity and the opportunity cost of growth exposure","sourceIds":["fed"]},
-    {"id":"bspPolicy","name":"BSP policy and PHP money-market yield","values":[4.1,4.0,3.8],"relevance":"Money-market carry and PHP opportunity cost","sourceIds":["bsp"]},
-    {"id":"philippineInflation","name":"Philippine inflation and real cash carry","values":[4.0,3.9,3.8],"relevance":"Inflation-adjusted appeal of the Peso Money Market allocation","sourceIds":["bsp"]},
-    {"id":"usInflation","name":"US inflation trend","values":[3.7,3.6,3.5],"relevance":"Fed path and long-duration technology multiples","sourceIds":["bls"]},
-    {"id":"usGrowth","name":"US growth and labor resilience","values":[3.8,3.7,3.6],"relevance":"Nasdaq revenue and earnings-cycle demand","sourceIds":["bea","bls"]},
-    {"id":"financialConditions","name":"US financial conditions and credit stress","values":[3.9,3.8,3.6],"relevance":"Risk appetite and cross-sleeve equity drawdown","sourceIds":["fred"]},
-    {"id":"realYieldsCurve","name":"US real yields and Treasury curve","values":[3.5,3.4,3.3],"relevance":"Discount rate for long-duration technology cash flows","sourceIds":["realYields","fed"]},
-    {"id":"technology","name":"Technology earnings and AI capex","values":[4.6,4.4,4.2],"relevance":"Global Technology growth engine","sourceIds":["fidelity"]},
-    {"id":"valuation","name":"Nasdaq valuation and concentration","values":[3.3,3.1,3.0],"relevance":"Entry risk, upside asymmetry and drawdown","sourceIds":["nasdaq"]},
-    {"id":"volatility","name":"Option-implied volatility and premium","values":[4.1,3.8,3.6],"relevance":"Nasdaq income ETF option-premium opportunity","sourceIds":["cboe","jpmorgan"]},
-    {"id":"fx","name":"USD/PHP direction and volatility","values":[3.9,3.8,3.7],"relevance":"Unhedged feeder-fund return in PHP","sourceIds":["bsp"]},
-    {"id":"globalDemand","name":"Global growth and technology demand","values":[3.7,3.6,3.5],"relevance":"Non-US technology revenue and cycle breadth","sourceIds":["worldbank"]}
+    {"id":"fedPolicy","name":"Federal Reserve policy and liquidity","values":[3.8,3.7,3.5],"channel":"US liquidity","relevance":"Equity liquidity and the opportunity cost of growth exposure","allocationImpact":{"money":-1,"tech":2,"nasdaq":2},"sourceIds":["fed"]},
+    {"id":"bspPolicy","name":"BSP policy and PHP money-market yield","values":[4.1,4.0,3.8],"channel":"PHP policy carry","relevance":"Money-market carry and PHP opportunity cost","allocationImpact":{"money":2,"tech":-1,"nasdaq":-1},"sourceIds":["bsp"]},
+    {"id":"philippineInflation","name":"Philippine inflation and real cash carry","values":[4.0,3.9,3.8],"channel":"PHP real yield","relevance":"Inflation-adjusted appeal of the Peso Money Market allocation","allocationImpact":{"money":2,"tech":0,"nasdaq":0},"sourceIds":["bsp"]},
+    {"id":"usInflation","name":"US inflation trend","values":[3.7,3.6,3.5],"channel":"US price pressure","relevance":"Fed path and long-duration technology multiples","allocationImpact":{"money":0,"tech":2,"nasdaq":1},"sourceIds":["bls"]},
+    {"id":"usGrowth","name":"US growth and labor resilience","values":[3.8,3.7,3.6],"channel":"US demand cycle","relevance":"Nasdaq revenue and earnings-cycle demand","allocationImpact":{"money":-1,"tech":1,"nasdaq":2},"sourceIds":["bea","bls"]},
+    {"id":"financialConditions","name":"US financial conditions and credit stress","values":[3.9,3.8,3.6],"channel":"Cross-asset risk appetite","relevance":"Risk appetite and cross-sleeve equity drawdown","allocationImpact":{"money":-1,"tech":2,"nasdaq":2},"sourceIds":["fred"]},
+    {"id":"realYieldsCurve","name":"US real yields and Treasury curve","values":[3.5,3.4,3.3],"channel":"Equity discount rate","relevance":"Discount rate for long-duration technology cash flows","allocationImpact":{"money":-1,"tech":2,"nasdaq":1},"sourceIds":["realYields","fed"]},
+    {"id":"technology","name":"Technology earnings and AI capex","values":[4.6,4.4,4.2],"channel":"Technology profit cycle","relevance":"Global Technology growth engine","allocationImpact":{"money":-1,"tech":2,"nasdaq":1},"sourceIds":["fidelity"]},
+    {"id":"valuation","name":"Nasdaq valuation and concentration","values":[3.3,3.1,3.0],"channel":"Equity valuation risk","relevance":"Entry risk, upside asymmetry and drawdown","allocationImpact":{"money":-1,"tech":1,"nasdaq":2},"sourceIds":["nasdaq"]},
+    {"id":"volatility","name":"Option-implied volatility and premium","values":[4.1,3.8,3.6],"channel":"Option premium","relevance":"Nasdaq income ETF option-premium opportunity","allocationImpact":{"money":0,"tech":-1,"nasdaq":2},"sourceIds":["cboe","jpmorgan"]},
+    {"id":"fx","name":"USD/PHP direction and volatility","values":[3.9,3.8,3.7],"channel":"PHP translation","relevance":"Unhedged feeder-fund return in PHP","allocationImpact":{"money":-1,"tech":2,"nasdaq":2},"sourceIds":["bsp"]},
+    {"id":"globalDemand","name":"Global growth and technology demand","values":[3.7,3.6,3.5],"channel":"Global technology demand","relevance":"Non-US technology revenue and cycle breadth","allocationImpact":{"money":-1,"tech":2,"nasdaq":1},"sourceIds":["worldbank"]}
   ],
   "scenarios": [
     {"rate":"3.00-3.99","label":"Active model","cap":20,"dd":19.96196,"netCagr":7.7975,"allocation":[15,15,70]},
