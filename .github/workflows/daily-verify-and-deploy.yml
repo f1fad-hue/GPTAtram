@@ -30,6 +30,7 @@ jobs:
           node --check scripts/validate-data.mjs
           node --check scripts/authoritative-audit.mjs
           node --check scripts/validate-target-dd.mjs
+          node --check scripts/validate-drawdown-p90.mjs
           node --check scripts/validate-monte-carlo.mjs
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
@@ -42,8 +43,8 @@ jobs:
           grep -q 'LU1046421795' data/portfolio.json
           grep -q 'IE000U9J8HX9' data/portfolio.json
           grep -q '46654Q203' data/portfolio.json
-          grep -q 'Fidelity target 10-year forward median DD' data/portfolio.json
-          grep -q 'JEPQ strategy-proxy 10-year forward median DD' data/portfolio.json
+          grep -q 'Fidelity target simulated 10-year P90 maximum DD' data/portfolio.json
+          grep -q 'JEPQ proxy simulated 10-year P90 maximum DD' data/portfolio.json
       - name: Publish the daily audit evidence
         if: always()
         uses: actions/upload-artifact@v4
