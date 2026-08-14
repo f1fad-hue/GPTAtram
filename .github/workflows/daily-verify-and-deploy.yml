@@ -51,8 +51,11 @@ jobs:
           grep -q '46654Q203' data/portfolio.json
           grep -q 'JEPQ is excluded from CAGR and used only for DD' data/portfolio.json
           grep -q '30% × official UCITS target annualized total return 18.15%' data/portfolio.json
-          grep -q '"targetLevelCagr":11.31' data/portfolio.json
+          grep -q '"targetFee":1.89' data/portfolio.json
+          grep -q '"targetLevelCagr":10.61' data/portfolio.json
           grep -q '"targetLevelCagr":9.89' data/portfolio.json
+          grep -q '\["ATRAM own fees","1.25%"' data/portfolio.json
+          grep -q '\["Target own fees","1.89% OCF"' data/portfolio.json
           grep -q 'Target-fund historical daily NAV maximum drawdown' data/portfolio.json
           grep -q 'JEPQ historical daily raw-NAV maximum drawdown proxy' data/portfolio.json
           grep -q '"basis":"historicalMaximumDrawdownOnly"' data/portfolio.json

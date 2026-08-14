@@ -28,7 +28,7 @@ const targetBasedGross = 0.30 * 18.15 + 0.70 * 6.70;
 const targetFeeAdjustment = 0.70 * 0.35;
 if (!close(nasdaqCagr.grossCagr, targetBasedGross, 1e-9) || !close(nasdaqCagr.targetFee, targetFeeAdjustment, 1e-9) || !close(nasdaqCagr.targetLevelCagr, 9.89, 1e-9) || !close(nasdaqCagr.netCagr, 8.24, 1e-9)) fail('Nasdaq CAGR must use the explicit 9.89% target-level forecast before the complete ATRAM wrapper-fee deduction.');
 const techCagr = data.fundModels.find((fund) => fund.id === 'tech');
-if (!close(techCagr.targetLevelCagr, 11.31, 1e-9) || !close(techCagr.netCagr, 10.06, 1e-9)) fail('Technology CAGR must use the explicit 11.31% target-level forecast before the complete ATRAM wrapper-fee deduction.');
+if (!close(techCagr.targetFee, 1.89, 1e-9) || !close(techCagr.targetLevelCagr, 10.61, 1e-9) || !close(techCagr.netCagr, 9.36, 1e-9) || !techCagr.sourceIds.includes('fidelity')) fail('Technology CAGR must use Fidelity\'s official 1.89% OCF, the 10.61% target-level forecast, and the complete ATRAM wrapper-fee deduction.');
 if (!nasdaqCagr.returnBasis?.includes('IE000U9J8HX9') || !nasdaqCagr.returnBasis?.includes('JEPQ is excluded from CAGR') || !['atramNasdaqKiid','jpmNasdaqFactsheet','jpmLtcma'].every((id) => nasdaqCagr.sourceIds.includes(id)) || nasdaqCagr.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must map to the actual UCITS target and LTCMA, never JEPQ history.');
 
 if (data.macroModel.maxDistinctDrivers !== 12 || data.drivers.length !== data.macroModel.maxDistinctDrivers) fail('Macro model must use the complete maximum set of twelve distinct portfolio-relevant drivers.');
@@ -99,6 +99,10 @@ for (const scenario of data.scenarios) {
 
 if (data.monteCarlo.paths !== 10000 || data.monteCarlo.months !== 120 || !Number.isInteger(data.monteCarlo.seed)) fail('Monte Carlo must use 10,000 reproducible paths over 120 months.');
 if (data.slides.length !== 3 || data.slides.some((slide) => slide.facts.length < 3 || !slide.sources?.length)) fail('Each required fund needs a concise CAGR/historical-DD card with authoritative links.');
+const feeFacts = Object.fromEntries(data.slides.map((slide) => [slide.title, Object.fromEntries(slide.facts.map((fact) => [fact[0], fact[1]]))]));
+if (feeFacts['ATRAM Peso Money Market Fund - A PHP']?.['ATRAM own fees'] !== '0.53%' || feeFacts['ATRAM Peso Money Market Fund - A PHP']?.['Target own fees'] !== 'None') fail('Money Market card must show its 0.53% ATRAM fee and no target fee.');
+if (feeFacts['ATRAM Global Technology Feeder Fund - A PHP']?.['ATRAM own fees'] !== '1.25%' || feeFacts['ATRAM Global Technology Feeder Fund - A PHP']?.['Target own fees'] !== '1.89% OCF') fail('Global Technology card must separate the 1.25% ATRAM fee from Fidelity\'s 1.89% OCF.');
+if (feeFacts['ATRAM Nasdaq Equity Income Feeder Fund - A PHP']?.['ATRAM own fees'] !== '1.65%' || feeFacts['ATRAM Nasdaq Equity Income Feeder Fund - A PHP']?.['Target own fees'] !== '0.35% TER') fail('Nasdaq card must separate the 1.65% ATRAM fee from the target ETF\'s 0.35% TER.');
 const requiredMonitors = ['ATRAM Peso Money Market Fund - A PHP', 'ATRAM Global Technology Feeder Fund - A PHP', 'Fidelity Global Technology target fund', 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP', 'JPM Nasdaq Equity Premium Income target ETF', 'U.S.-listed JEPQ strategy-history proxy'];
 if (data.monitor.length !== requiredMonitors.length || new Set(data.monitor.map((item) => item.holding)).size !== data.monitor.length || !requiredMonitors.every((holding) => data.monitor.some((item) => item.holding === holding)) || data.monitor.some((item) => item.score < 1 || item.score > 100 || !item.status || !item.trigger || !item.cadence)) fail('Relevance monitoring must cover every required A PHP fund and its target/proxy vehicle exactly once, with score, status, trigger and cadence.');
 

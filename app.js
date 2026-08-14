@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260814-02', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260814-03', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
