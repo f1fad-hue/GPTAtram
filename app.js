@@ -11,7 +11,7 @@ themeToggle.addEventListener('click', () => {
 const heading = (text) => [...document.querySelectorAll('.section-heading')].find((node) => node.textContent.includes(text));
 const tabGroups = {
   overview: [$('.metrics'), heading('Constrained maximum-growth allocation'), $('.allocation-grid'), $('#dd-math')],
-  macro: [heading('Only drivers that can change allocations'), $('.heatmap-wrap'), heading('Optimized allocation scenarios'), $('#scenario-grid')],
+  macro: [heading('macro allocation matrix'), $('.heatmap-wrap'), heading('Optimized allocation scenarios'), $('#scenario-grid')],
   research: [heading('Net CAGR and historical DD'), $('.slides'), heading('10-year Monte Carlo'), $('.simulation')],
   monitor: [heading('When each holding stops earning a place'), $('.monitor')],
   sources: [$('.report')]
@@ -30,7 +30,7 @@ tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab.dataset.
 const requestedTab = location.hash.slice(1);
 selectTab(Object.hasOwn(tabGroups, requestedTab) ? requestedTab : 'overview');
 
-fetch('data/portfolio.json?v=20260814-03', { cache: 'no-store' }).then((response) => {
+fetch('data/portfolio.json?v=20260814-04', { cache: 'no-store' }).then((response) => {
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data) => {
@@ -56,6 +56,7 @@ fetch('data/portfolio.json?v=20260814-03', { cache: 'no-store' }).then((response
   renderDrawdownMath(data, macroRate, portfolioDd);
 
   $('#heatmap tbody').innerHTML = data.drivers.map((driver) => `<tr><td><b>${driver.name}</b><small>${driver.channel}</small></td>${driver.values.map((value) => `<td><div class="heat" style="background:${heatColor(value)}">${value.toFixed(1)}</div></td>`).join('')}<td><b>${(data.macroModel.driverWeights[driver.id] * 100).toFixed(0)}%</b></td>${['money','tech','nasdaq'].map((fund) => `<td><div class="impact" style="background:${impactColor(driver.allocationImpact[fund])}" title="${driver.relevance}">${driver.allocationImpact[fund] > 0 ? '+' : ''}${driver.allocationImpact[fund]}</div></td>`).join('')}</tr>`).join('');
+  $('#excluded-drivers').innerHTML = data.macroModel.excludedCandidates.map((candidate) => `<li><b>${candidate.name}</b> → ${candidate.duplicateOf}: ${candidate.reason}</li>`).join('');
 
   const colors = portfolio.allocation.map((item) => item.color);
   $('#scenario-grid').innerHTML = data.scenarios.map((scenario) => `<article class="scenario panel"><header><div><p class="eyebrow">RATE ${scenario.rate}</p><h3>${scenario.label}</h3></div><b>${scenario.cap}% DD cap</b></header><div class="donut" data-label="${scenario.dd.toFixed(2)}% DD · ${scenario.netCagr.toFixed(2)}% CAGR"></div><p>Money ${scenario.allocation[0]}% · Tech ${scenario.allocation[1]}% · Nasdaq ${scenario.allocation[2]}%</p></article>`).join('');

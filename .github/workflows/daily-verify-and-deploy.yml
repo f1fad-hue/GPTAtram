@@ -39,9 +39,12 @@ jobs:
           grep -q 'Monte Carlo' index.html
           grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
           grep -q 'Philippine inflation and real cash carry' data/portfolio.json
-          grep -q 'US real yields and Treasury curve' data/portfolio.json
-          grep -q 'Twelve is the maximum distinct coverage set' data/portfolio.json
-          grep -q '"maxDistinctDrivers":12' data/portfolio.json
+          grep -q 'US real yields' data/portfolio.json
+          grep -q 'Federal Reserve balance-sheet liquidity' data/portfolio.json
+          grep -q 'Global semiconductor shipment cycle' data/portfolio.json
+          grep -q 'Twenty-one drivers are retained from 29 screened candidates' data/portfolio.json
+          grep -q '"screenedCandidates":29' data/portfolio.json
+          grep -q '"maxDistinctDrivers":21' data/portfolio.json
           grep -q '"allocationImpact"' data/portfolio.json
           grep -q 'ATRAM Peso Money Market Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Global Technology Feeder Fund - A PHP' data/portfolio.json

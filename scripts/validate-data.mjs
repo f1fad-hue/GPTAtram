@@ -31,14 +31,16 @@ const techCagr = data.fundModels.find((fund) => fund.id === 'tech');
 if (!close(techCagr.targetFee, 1.89, 1e-9) || !close(techCagr.targetLevelCagr, 10.61, 1e-9) || !close(techCagr.netCagr, 9.36, 1e-9) || !techCagr.sourceIds.includes('fidelity')) fail('Technology CAGR must use Fidelity\'s official 1.89% OCF, the 10.61% target-level forecast, and the complete ATRAM wrapper-fee deduction.');
 if (!nasdaqCagr.returnBasis?.includes('IE000U9J8HX9') || !nasdaqCagr.returnBasis?.includes('JEPQ is excluded from CAGR') || !['atramNasdaqKiid','jpmNasdaqFactsheet','jpmLtcma'].every((id) => nasdaqCagr.sourceIds.includes(id)) || nasdaqCagr.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must map to the actual UCITS target and LTCMA, never JEPQ history.');
 
-if (data.macroModel.maxDistinctDrivers !== 12 || data.drivers.length !== data.macroModel.maxDistinctDrivers) fail('Macro model must use the complete maximum set of twelve distinct portfolio-relevant drivers.');
+if (data.macroModel.screenedCandidates !== 29 || data.macroModel.maxDistinctDrivers !== 21 || data.drivers.length !== data.macroModel.maxDistinctDrivers) fail('Macro model must retain the complete maximum set of 21 distinct portfolio-relevant drivers from 29 screened candidates.');
 if (new Set(data.drivers.map((driver) => driver.id)).size !== data.drivers.length) fail('Macro driver IDs must be unique.');
 if (data.drivers.some((driver) => driver.values.length !== 3 || driver.values.some((value) => value < 1 || value > 5))) fail('Macro values must be 1-5 across 3/6/12 months.');
 const requiredImpactFunds = ['money','tech','nasdaq'];
 if (data.drivers.some((driver) => !driver.relevance || !driver.channel || !driver.sourceIds?.length || !(driver.id in data.macroModel.driverWeights))) fail('Every macro driver must document a unique channel, relevance, sources and model weight.');
 if (new Set(data.drivers.map((driver) => driver.channel)).size !== data.drivers.length) fail('Each macro driver must have a distinct non-duplicated portfolio channel.');
 if (data.drivers.some((driver) => !driver.allocationImpact || Object.keys(driver.allocationImpact).sort().join(',') !== requiredImpactFunds.slice().sort().join(',') || requiredImpactFunds.some((fund) => !Number.isInteger(driver.allocationImpact[fund]) || driver.allocationImpact[fund] < -2 || driver.allocationImpact[fund] > 2) || requiredImpactFunds.every((fund) => driver.allocationImpact[fund] === 0))) fail('Every macro driver must have a -2 to +2 allocation sensitivity for all three funds and change at least one fund.');
-if (!data.macroModel.selectionRule?.includes('Twelve') || !data.macroModel.selectionRule.includes('duplicate')) fail('Macro model must document the twelve-driver non-duplication ceiling.');
+const retainedDriverNames = new Set(data.drivers.map((driver) => driver.name));
+if (!data.macroModel.selectionRule?.includes('Twenty-one') || !data.macroModel.selectionRule.includes('29') || !data.macroModel.selectionRule.includes('duplicate')) fail('Macro model must document the 21-driver non-duplication ceiling and screened-candidate count.');
+if (data.macroModel.excludedCandidates?.length !== data.macroModel.screenedCandidates - data.macroModel.maxDistinctDrivers || data.macroModel.excludedCandidates.some((candidate) => !candidate.name || !candidate.reason || !retainedDriverNames.has(candidate.duplicateOf))) fail('Every excluded macro candidate must document its retained duplicate and exclusion reason.');
 const horizonWeights = data.macroModel.horizonWeights;
 const driverWeights = data.macroModel.driverWeights;
 if (!close(sum(Object.values(horizonWeights)), 1, 1e-9) || !close(sum(Object.values(driverWeights)), 1, 1e-9)) fail('Macro horizon and driver weights must each total 100%.');

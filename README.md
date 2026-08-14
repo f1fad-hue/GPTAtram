@@ -8,7 +8,7 @@ Mobile-first, static research dashboard for three required PHP UITF classes:
 
 ## Model guardrails
 
-- Macro sentiment: 1 bearish to 5 bullish, using twelve distinct portfolio drivers across 3, 6 and 12 months—the optimized coverage ceiling before signals become duplicates.
+- Macro sentiment: 1 bearish to 5 bullish, using 21 distinct portfolio drivers selected from 29 screened candidates across 3, 6 and 12 months—the validated coverage ceiling before allocation effects become duplicates.
 - Drawdown: the simple allocation-weighted sum of verified historical maximum drawdowns. No forward-looking DD, blend, diversification credit, or correlation adjustment. Technology uses Fidelity A-ACC-USD; Nasdaq uses older U.S. JEPQ as the historical DD proxy; Money Market uses its own A PHP NAV because it has no target.
 - Caps: rate 3.00-3.99 = 20%; rate 4.00-4.99 = 25%; rate 5.00 = 30%.
 - Optimizer: maximum allocation-weighted net CAGR on a 5% grid, with every required fund at least 5% and total weight 100%.
