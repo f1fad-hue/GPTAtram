@@ -5,112 +5,100 @@ const errors = [];
 const fail = (message) => errors.push(message);
 const sum = (values) => values.reduce((total, value) => total + value, 0);
 const close = (left, right, tolerance = 0.011) => Math.abs(left - right) <= tolerance;
+const requiredIds = ['money','tech','nasdaq','asia'];
+const allocation = data.portfolio.allocation;
+const ids = allocation.map((item) => item.id);
 
-const ids = data.portfolio.allocation.map((item) => item.id);
-if (ids.length !== 3 || new Set(ids).size !== 3 || !['money','tech','nasdaq'].every((id) => ids.includes(id))) fail('Active allocation must include all three required funds exactly once.');
-if (data.portfolio.allocation.some((item) => !item.name.endsWith('A PHP'))) fail('Every active holding must use the required A PHP unit class.');
-if (sum(data.portfolio.allocation.map((item) => item.weight)) !== 100) fail('Active allocation must total 100%.');
-if (data.portfolio.allocation.some((item) => item.weight < data.optimizer.minimumFundWeight || item.weight % data.optimizer.gridStep !== 0)) fail('Active weights must include every fund and use the configured 5% grid.');
+if (ids.length !== 4 || new Set(ids).size !== 4 || !requiredIds.every((id) => ids.includes(id))) fail('Allocation must contain all four required funds exactly once.');
+if (sum(allocation.map((item) => item.weight)) !== 100 || allocation.some((item) => item.weight < 5 || item.weight % 5)) fail('Allocation must total 100%, include every fund at 5% or more and use the 5% grid.');
+if (!allocation.find((item) => item.id === 'asia')?.name.includes('Asia Equity Opportunity')) fail('The Asia Equity Opportunity fund is required.');
 
-if (data.fundModels.length !== 3 || new Set(data.fundModels.map((fund) => fund.id)).size !== 3) fail('Each required fund must have exactly one fee-adjusted CAGR model.');
-for (const fund of data.fundModels) {
-  const expectedTargetLevel = fund.id === 'money' ? null : fund.grossCagr - fund.targetFee;
-  if (fund.id === 'money' ? fund.targetLevelCagr !== null : !close(fund.targetLevelCagr, expectedTargetLevel, 1e-9)) fail(`${fund.id}: target-level forecast must equal gross scenario minus target fees, or null when no target exists.`);
-  const investableInput = fund.targetLevelCagr ?? fund.grossCagr;
-  if (!close(fund.netCagr, investableInput - fund.wrapperFee, 1e-9)) fail(`${fund.id}: A PHP net CAGR must equal the explicit target/own-fund input minus the complete wrapper fee stack.`);
-  if (!fund.forecastUse) fail(`${fund.id}: forecast-use basis is required.`);
-  if (!fund.feeBasis || !Array.isArray(fund.sourceIds) || fund.sourceIds.length === 0) fail(`${fund.id}: fee basis and authoritative sources are required.`);
+if (data.fundModels.length !== 4 || new Set(data.fundModels.map((fund) => fund.id)).size !== 4) fail('Four unique fee-adjusted CAGR models are required.');
+const modelById = Object.fromEntries(data.fundModels.map((fund) => [fund.id, fund]));
+for (const id of requiredIds) {
+  const fund = modelById[id];
+  if (!fund) { fail(`${id}: missing fund model.`); continue; }
+  const afterTarget = fund.targetLevelCagr ?? fund.grossCagr;
+  if (id === 'money' ? fund.targetLevelCagr !== null : !close(fund.targetLevelCagr, fund.grossCagr - fund.targetFee, 1e-9)) fail(`${id}: target-level CAGR math is wrong.`);
+  if (!close(fund.netCagr, afterTarget - fund.wrapperFee, 1e-9)) fail(`${id}: fully net CAGR math is wrong.`);
+  if (!fund.forecastUse || !fund.feeBasis || !fund.sourceIds?.length) fail(`${id}: fee/forecast basis and sources are required.`);
 }
-const requiredFeeSources = { money:'atramMoneyKiid', tech:'atramTechKiid', nasdaq:'atramNasdaqKiid' };
-for (const fund of data.fundModels) if (!fund.sourceIds.includes(requiredFeeSources[fund.id])) fail(`${fund.id}: fees must map to its official A PHP KIID.`);
-const nasdaqCagr = data.fundModels.find((fund) => fund.id === 'nasdaq');
-const targetBasedGross = 0.30 * 18.15 + 0.70 * 6.70;
-const targetFeeAdjustment = 0.70 * 0.35;
-if (!close(nasdaqCagr.grossCagr, targetBasedGross, 1e-9) || !close(nasdaqCagr.targetFee, targetFeeAdjustment, 1e-9) || !close(nasdaqCagr.targetLevelCagr, 9.89, 1e-9) || !close(nasdaqCagr.netCagr, 8.24, 1e-9)) fail('Nasdaq CAGR must use the explicit 9.89% target-level forecast before the complete ATRAM wrapper-fee deduction.');
-const techCagr = data.fundModels.find((fund) => fund.id === 'tech');
-if (!close(techCagr.targetFee, 1.89, 1e-9) || !close(techCagr.targetLevelCagr, 10.61, 1e-9) || !close(techCagr.netCagr, 9.36, 1e-9) || !techCagr.sourceIds.includes('fidelity')) fail('Technology CAGR must use Fidelity\'s official 1.89% OCF, the 10.61% target-level forecast, and the complete ATRAM wrapper-fee deduction.');
-if (!nasdaqCagr.returnBasis?.includes('IE000U9J8HX9') || !nasdaqCagr.returnBasis?.includes('JEPQ is excluded from CAGR') || !['atramNasdaqKiid','jpmNasdaqFactsheet','jpmLtcma'].every((id) => nasdaqCagr.sourceIds.includes(id)) || nasdaqCagr.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must map to the actual UCITS target and LTCMA, never JEPQ history.');
+if (!close(modelById.money.netCagr,3.47,1e-9) || !modelById.money.sourceIds.includes('atramMoneyKiid')) fail('Money Market must retain the verified 3.47% fully net input.');
+if (!close(modelById.tech.netCagr,9.36,1e-9) || !close(modelById.tech.targetFee,1.89,1e-9) || !modelById.tech.sourceIds.includes('fidelity')) fail('Technology must use 9.36% net CAGR and Fidelity 1.89% OCF.');
+if (!close(modelById.nasdaq.netCagr,8.24,1e-9) || !modelById.nasdaq.returnBasis?.includes('IE000U9J8HX9') || modelById.nasdaq.sourceIds.includes('jepqHistory')) fail('Nasdaq CAGR must be 8.24%, use the actual UCITS target and exclude JEPQ history.');
+if (!close(modelById.asia.grossCagr,7.90,1e-9) || !close(modelById.asia.targetFee,.85,1e-9) || !close(modelById.asia.wrapperFee,1.30,1e-9) || !close(modelById.asia.netCagr,5.75,1e-9) || !modelById.asia.feeBasis?.includes('HK0000615358')) fail('Asia must use 7.90% LTCMA less 0.85% target TER and 1.30% ATRAM fees = 5.75%.');
 
-if (data.macroModel.screenedCandidates !== 29 || data.macroModel.maxDistinctDrivers !== 21 || data.drivers.length !== data.macroModel.maxDistinctDrivers) fail('Macro model must retain the complete maximum set of 21 distinct portfolio-relevant drivers from 29 screened candidates.');
-if (new Set(data.drivers.map((driver) => driver.id)).size !== data.drivers.length) fail('Macro driver IDs must be unique.');
-if (data.drivers.some((driver) => driver.values.length !== 3 || driver.values.some((value) => value < 1 || value > 5))) fail('Macro values must be 1-5 across 3/6/12 months.');
-const requiredImpactFunds = ['money','tech','nasdaq'];
-if (data.drivers.some((driver) => !driver.relevance || !driver.channel || !driver.sourceIds?.length || !(driver.id in data.macroModel.driverWeights))) fail('Every macro driver must document a unique channel, relevance, sources and model weight.');
-if (new Set(data.drivers.map((driver) => driver.channel)).size !== data.drivers.length) fail('Each macro driver must have a distinct non-duplicated portfolio channel.');
-if (data.drivers.some((driver) => !driver.allocationImpact || Object.keys(driver.allocationImpact).sort().join(',') !== requiredImpactFunds.slice().sort().join(',') || requiredImpactFunds.some((fund) => !Number.isInteger(driver.allocationImpact[fund]) || driver.allocationImpact[fund] < -2 || driver.allocationImpact[fund] > 2) || requiredImpactFunds.every((fund) => driver.allocationImpact[fund] === 0))) fail('Every macro driver must have a -2 to +2 allocation sensitivity for all three funds and change at least one fund.');
-const retainedDriverNames = new Set(data.drivers.map((driver) => driver.name));
-if (!data.macroModel.selectionRule?.includes('Twenty-one') || !data.macroModel.selectionRule.includes('29') || !data.macroModel.selectionRule.includes('duplicate')) fail('Macro model must document the 21-driver non-duplication ceiling and screened-candidate count.');
-if (data.macroModel.excludedCandidates?.length !== data.macroModel.screenedCandidates - data.macroModel.maxDistinctDrivers || data.macroModel.excludedCandidates.some((candidate) => !candidate.name || !candidate.reason || !retainedDriverNames.has(candidate.duplicateOf))) fail('Every excluded macro candidate must document its retained duplicate and exclusion reason.');
-const horizonWeights = data.macroModel.horizonWeights;
-const driverWeights = data.macroModel.driverWeights;
-if (!close(sum(Object.values(horizonWeights)), 1, 1e-9) || !close(sum(Object.values(driverWeights)), 1, 1e-9)) fail('Macro horizon and driver weights must each total 100%.');
-const macroRate = data.drivers.reduce((total, driver) => total + (driver.values[0] * horizonWeights.threeMonth + driver.values[1] * horizonWeights.sixMonth + driver.values[2] * horizonWeights.twelveMonth) * driverWeights[driver.id], 0);
-if (macroRate < 1 || macroRate > 5) fail('Portfolio macro rate must remain on the 1 bearish to 5 bullish scale.');
-if (!close(macroRate, data.portfolio.rate)) fail(`Stored rate ${data.portfolio.rate} does not match calculated rate ${macroRate.toFixed(2)}.`);
-const expectedCap = macroRate < 4 ? 20 : macroRate < 5 ? 25 : 30;
-if (data.portfolio.drawdownCap !== expectedCap) fail(`Rate ${macroRate.toFixed(2)} requires a ${expectedCap}% DD cap.`);
-const expectedRateBand = macroRate < 4 ? '3.00-3.99' : macroRate < 5 ? '4.00-4.99' : '5.00';
-if (data.portfolio.rateBand !== expectedRateBand) fail(`Rate ${macroRate.toFixed(2)} requires the ${expectedRateBand} stored rate band.`);
-
-const ddModel = data.drawdownModel;
-if (ddModel?.basis !== 'historicalMaximumDrawdownOnly' || ddModel?.aggregation !== 'simpleWeightedSum' || 'simulation' in ddModel || 'weights' in ddModel || 'correlations' in ddModel) fail('DD must use only the simple allocation-weighted sum of historical maximum drawdowns, with no forward DD, blend, or correlation credit.');
-if (ddModel.funds.some((fund) => !Number.isFinite(fund.historical) || !fund.historicalBasis || !fund.historicalMetric || !fund.sourceIds?.length || 'forwardP50' in fund || 'forwardBasis' in fund || 'forwardMetric' in fund)) fail('Every DD input must contain only a documented historical maximum drawdown and authoritative source.');
-const ddFunds = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund]));
-if (!ddFunds.money.historicalBasis.includes('no target vehicle') || !ddFunds.money.sourceIds.includes('atramMoneyKiid')) fail('Money-market historical maximum DD must use its own official A PHP NAV because it has no target vehicle.');
-if (!close(ddFunds.tech.historical, 31.6614, 1e-6) || !ddFunds.tech.historicalBasis.includes('LU1046421795') || !ddFunds.tech.historicalBasis.includes('3,203') || !ddFunds.tech.historicalBasis.includes('19 Feb 2020') || !ddFunds.tech.historicalBasis.includes('18 Mar 2020') || !ddFunds.tech.historicalMetric.includes('daily NAV maximum drawdown') || !ddFunds.tech.sourceIds.includes('fidelityNav')) fail('Technology DD must use the exact Fidelity A-ACC-USD official daily NAV maximum drawdown and document its record count, peak and trough.');
-if (!ddFunds.nasdaq.historicalBasis.includes('JEPQ') || !ddFunds.nasdaq.historicalBasis.includes('46654Q203') || !ddFunds.nasdaq.historicalBasis.includes('1,072') || !ddFunds.nasdaq.historicalBasis.includes('not distribution-adjusted') || !ddFunds.nasdaq.historicalBasis.includes('actual UCITS target IE000U9J8HX9') || !ddFunds.nasdaq.historicalMetric.includes('raw-NAV') || !ddFunds.nasdaq.sourceIds.includes('jepqHistory')) fail('Nasdaq historical maximum DD must use official daily JEPQ raw-NAV history as a disclosed, non-distribution-adjusted proxy while preserving the actual UCITS target identity.');
-const historicalDd = Object.fromEntries(ddModel.funds.map((fund) => [fund.id, fund.historical / 100]));
-function portfolioDd(allocation) {
-  return allocation.reduce((total, weight, index) => total + weight / 100 * historicalDd[ids[index]], 0) * 100;
+const macro = data.macroModel;
+if (macro.maxDistinctDrivers !== 12 || data.drivers.length !== 12) fail('The macro matrix must use exactly 12 distinct portfolio-relevant drivers.');
+if (new Set(data.drivers.map((driver) => driver.id)).size !== 12 || new Set(data.drivers.map((driver) => driver.channel)).size !== 12) fail('Macro IDs and transmission channels must be unique.');
+if (!close(sum(Object.values(macro.horizonWeights)),1,1e-9) || !close(sum(Object.values(macro.driverWeights)),1,1e-9)) fail('Macro horizon and driver weights must each total 100%.');
+for (const driver of data.drivers) {
+  if (!['Broad macro','Correlated portfolio'].includes(driver.category) || !driver.region || !driver.channel || !driver.relevance || !driver.sourceIds?.length) fail(`${driver.id}: classification, relevance and sources are required.`);
+  if (driver.values?.length !== 3 || driver.values.some((value) => value < 1 || value > 5)) fail(`${driver.id}: 3/6/12-month scores must be 1-5.`);
+  if (!(driver.id in macro.driverWeights)) fail(`${driver.id}: missing model weight.`);
+  const impact = driver.allocationImpact;
+  if (!impact || Object.keys(impact).sort().join(',') !== requiredIds.slice().sort().join(',') || requiredIds.some((id) => !Number.isInteger(impact[id]) || impact[id] < -2 || impact[id] > 2) || requiredIds.every((id) => impact[id] === 0)) fail(`${driver.id}: all four -2 to +2 fund sensitivities are required.`);
 }
-const netCagr = Object.fromEntries(data.fundModels.map((fund) => [fund.id, fund.netCagr]));
-function portfolioCagr(allocation) { return allocation.reduce((total, weight, index) => total + netCagr[ids[index]] * weight / 100, 0); }
+const h = macro.horizonWeights;
+const macroRate = data.drivers.reduce((total, driver) => total + (driver.values[0]*h.threeMonth + driver.values[1]*h.sixMonth + driver.values[2]*h.twelveMonth)*macro.driverWeights[driver.id],0);
+if (!close(macroRate,data.portfolio.rate) || data.portfolio.rate !== Number(data.portfolio.rate.toFixed(2))) fail(`Macro rate must match and display to two decimals; calculated ${macroRate.toFixed(4)}.`);
+const cap = macroRate < 4 ? 20 : macroRate < 5 ? 25 : 30;
+const band = macroRate < 4 ? '3.00-3.99' : macroRate < 5 ? '4.00-4.99' : '5.00';
+if (data.portfolio.drawdownCap !== cap || data.portfolio.rateBand !== band) fail('Stored rating band or DD cap does not match the macro rate.');
 
-const activeAllocation = data.portfolio.allocation.map((item) => item.weight);
-const calculatedDd = portfolioDd(activeAllocation);
-const calculatedCagr = portfolioCagr(activeAllocation);
-if (calculatedDd > data.portfolio.drawdownCap) fail(`Active DD ${calculatedDd.toFixed(2)}% exceeds ${data.portfolio.drawdownCap}% cap.`);
-if (!close(calculatedCagr, data.portfolio.netCagrForecast)) fail(`Stored portfolio CAGR ${data.portfolio.netCagrForecast} does not match ${calculatedCagr.toFixed(3)}.`);
+if (data.regionalRankings.length !== 3 || new Set(data.regionalRankings.map((row) => row.region)).size !== 3 || !['US','Europe','Asia'].every((region) => data.regionalRankings.some((row) => row.region === region))) fail('Regional rankings must cover US, Europe and Asia exactly once.');
+for (const region of data.regionalRankings) {
+  const drivers = region.driverIds.map((id) => data.drivers.find((driver) => driver.id === id));
+  if (drivers.some((driver) => !driver) || !region.rationale || region.values?.length !== 3) { fail(`${region.region}: invalid regional ranking basis.`); continue; }
+  const denominator = sum(drivers.map((driver) => macro.driverWeights[driver.id]));
+  const calculated = [0,1,2].map((index) => sum(drivers.map((driver) => driver.values[index]*macro.driverWeights[driver.id]))/denominator);
+  if (calculated.some((value,index) => !close(value,region.values[index]))) fail(`${region.region}: regional horizon score does not match its mapped drivers.`);
+  const score = region.values[0]*h.threeMonth + region.values[1]*h.sixMonth + region.values[2]*h.twelveMonth;
+  if (!close(score,region.score)) fail(`${region.region}: regional composite is wrong.`);
+}
+const ranked = [...data.regionalRankings].sort((a,b) => b.score-a.score);
+if (ranked.some((row,index) => row.rank !== index+1)) fail('Regional ranks must follow composite scores.');
 
-function optimize(cap) {
+const dd = data.drawdownModel;
+if (dd.basis !== 'historicalMaximumDrawdownOnly' || dd.aggregation !== 'simpleWeightedSum' || /forward|correlation|diversification/i.test(JSON.stringify(dd).replaceAll('No forward-looking DD, blend, correlation adjustment, or diversification credit is used.',''))) fail('DD may use historical maximum drawdown and simple weighted sum only.');
+if (dd.funds.length !== 4 || new Set(dd.funds.map((fund) => fund.id)).size !== 4) fail('Four historical maximum-DD inputs are required.');
+const ddById = Object.fromEntries(dd.funds.map((fund) => [fund.id,fund]));
+if (!close(ddById.money.historical,.1932,1e-6) || !ddById.money.historicalBasis.includes('No target fund exists')) fail('Money Market must use its own official NAV because no target exists.');
+if (!close(ddById.tech.historical,31.6614,1e-6) || !ddById.tech.historicalBasis.includes('LU1046421795')) fail('Technology DD must use the Fidelity target.');
+if (!close(ddById.nasdaq.historical,21.6911,1e-6) || !ddById.nasdaq.historicalBasis.includes('46654Q203')) fail('Nasdaq DD must use the documented JEPQ historical proxy.');
+if (!close(ddById.asia.historical,35.9769,1e-6) || !ddById.asia.historicalBasis.includes('HK0000151818') || !ddById.asia.historicalBasis.includes('accumulating')) fail('Asia DD must use the JPM target accumulating USD share history.');
+if (dd.funds.some((fund) => !fund.historicalBasis || !fund.historicalMetric || !fund.sourceIds?.length)) fail('Every DD input needs a basis, metric and sources.');
+const ddPercent = Object.fromEntries(dd.funds.map((fund) => [fund.id,fund.historical]));
+const cagrPercent = Object.fromEntries(data.fundModels.map((fund) => [fund.id,fund.netCagr]));
+const portfolioDd = (weights) => sum(weights.map((weight,index) => weight/100*ddPercent[ids[index]]));
+const portfolioCagr = (weights) => sum(weights.map((weight,index) => weight/100*cagrPercent[ids[index]]));
+function optimize(limit) {
   let best;
-  for (let money = data.optimizer.minimumFundWeight; money <= 90; money += data.optimizer.gridStep) {
-    for (let tech = data.optimizer.minimumFundWeight; tech <= 90; tech += data.optimizer.gridStep) {
-      const nasdaq = 100 - money - tech;
-      if (nasdaq < data.optimizer.minimumFundWeight || nasdaq % data.optimizer.gridStep !== 0) continue;
-      const allocation = [money, tech, nasdaq];
-      const dd = portfolioDd(allocation);
-      const cagr = portfolioCagr(allocation);
-      if (dd <= cap && (!best || cagr > best.cagr + 1e-12)) best = { allocation, dd, cagr };
-    }
+  for (let a=5;a<=85;a+=5) for (let b=5;b<=85;b+=5) for (let c=5;c<=85;c+=5) {
+    const d=100-a-b-c;
+    if (d<5 || d%5) continue;
+    const weights=[a,b,c,d]; const loss=portfolioDd(weights); const growth=portfolioCagr(weights);
+    if (loss<=limit+1e-12 && (!best || growth>best.growth+1e-12)) best={weights,loss,growth};
   }
   return best;
 }
-
-const activeBest = optimize(data.portfolio.drawdownCap);
-if (activeBest.allocation.some((weight, index) => weight !== activeAllocation[index])) fail(`Active allocation is not maximum forecast CAGR. Expected ${activeBest.allocation.join('/')}.`);
-const requiredScenarios = new Map([['3.00-3.99', 20], ['4.00-4.99', 25], ['5.00', 30]]);
-if (data.scenarios.length !== 3 || new Set(data.scenarios.map((scenario) => scenario.rate)).size !== 3) fail('Exactly one optimized rate 3, 4 and 5 scenario is required.');
+const activeWeights = allocation.map((item) => item.weight);
+const activeDd = portfolioDd(activeWeights); const activeCagr = portfolioCagr(activeWeights); const activeBest=optimize(cap);
+if (activeBest.weights.some((value,index) => value!==activeWeights[index])) fail(`Active allocation is not optimal; expected ${activeBest.weights.join('/')}.`);
+if (!close(activeDd,data.portfolio.drawdown,1e-6) || !close(activeCagr,data.portfolio.netCagrForecast)) fail('Stored portfolio DD or CAGR is inconsistent.');
+if (activeDd>cap) fail('Active allocation exceeds its DD cap.');
+const caps = new Map([['3.00-3.99',20],['4.00-4.99',25],['5.00',30]]);
+if (data.scenarios.length!==3) fail('Exactly three rate scenarios are required.');
 for (const scenario of data.scenarios) {
-  if (scenario.cap !== requiredScenarios.get(scenario.rate)) fail(`${scenario.rate}: scenario DD cap is not the required rating-dependent cap.`);
-  if (sum(scenario.allocation) !== 100 || scenario.allocation.some((weight) => weight < data.optimizer.minimumFundWeight || weight % data.optimizer.gridStep !== 0)) fail(`${scenario.rate}: invalid allocation grid.`);
-  const best = optimize(scenario.cap);
-  if (best.allocation.some((weight, index) => weight !== scenario.allocation[index])) fail(`${scenario.rate}: scenario is not the CAGR-maximizing allocation. Expected ${best.allocation.join('/')}.`);
-  if (!close(best.dd, scenario.dd) || !close(best.cagr, scenario.netCagr)) fail(`${scenario.rate}: stated DD or CAGR does not match calculation.`);
+  const expectedCap=caps.get(scenario.rate); const best=optimize(expectedCap);
+  if (!expectedCap || scenario.cap!==expectedCap || best.weights.some((value,index)=>value!==scenario.allocation[index]) || !close(best.loss,scenario.dd) || !close(best.growth,scenario.netCagr)) fail(`${scenario.rate}: scenario is not the maximum-growth feasible solution.`);
 }
 
-if (data.monteCarlo.paths !== 10000 || data.monteCarlo.months !== 120 || !Number.isInteger(data.monteCarlo.seed)) fail('Monte Carlo must use 10,000 reproducible paths over 120 months.');
-if (data.slides.length !== 3 || data.slides.some((slide) => slide.facts.length < 3 || !slide.sources?.length)) fail('Each required fund needs a concise CAGR/historical-DD card with authoritative links.');
-const feeFacts = Object.fromEntries(data.slides.map((slide) => [slide.title, Object.fromEntries(slide.facts.map((fact) => [fact[0], fact[1]]))]));
-if (feeFacts['ATRAM Peso Money Market Fund - A PHP']?.['ATRAM own fees'] !== '0.53%' || feeFacts['ATRAM Peso Money Market Fund - A PHP']?.['Target own fees'] !== 'None') fail('Money Market card must show its 0.53% ATRAM fee and no target fee.');
-if (feeFacts['ATRAM Global Technology Feeder Fund - A PHP']?.['ATRAM own fees'] !== '1.25%' || feeFacts['ATRAM Global Technology Feeder Fund - A PHP']?.['Target own fees'] !== '1.89% OCF') fail('Global Technology card must separate the 1.25% ATRAM fee from Fidelity\'s 1.89% OCF.');
-if (feeFacts['ATRAM Nasdaq Equity Income Feeder Fund - A PHP']?.['ATRAM own fees'] !== '1.65%' || feeFacts['ATRAM Nasdaq Equity Income Feeder Fund - A PHP']?.['Target own fees'] !== '0.35% TER') fail('Nasdaq card must separate the 1.65% ATRAM fee from the target ETF\'s 0.35% TER.');
-const requiredMonitors = ['ATRAM Peso Money Market Fund - A PHP', 'ATRAM Global Technology Feeder Fund - A PHP', 'Fidelity Global Technology target fund', 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP', 'JPM Nasdaq Equity Premium Income target ETF', 'U.S.-listed JEPQ strategy-history proxy'];
-if (data.monitor.length !== requiredMonitors.length || new Set(data.monitor.map((item) => item.holding)).size !== data.monitor.length || !requiredMonitors.every((holding) => data.monitor.some((item) => item.holding === holding)) || data.monitor.some((item) => item.score < 1 || item.score > 100 || !item.status || !item.trigger || !item.cadence)) fail('Relevance monitoring must cover every required A PHP fund and its target/proxy vehicle exactly once, with score, status, trigger and cadence.');
+if (data.slides.length!==4 || data.slides.some((slide)=>slide.facts.length<4 || !slide.sources?.length)) fail('Four concise fund cards with fees, CAGR, DD and sources are required.');
+if (data.monitor.length!==8 || new Set(data.monitor.map((item)=>item.holding)).size!==8 || data.monitor.some((item)=>item.score<1 || item.score>100 || !item.status || !item.trigger || !item.cadence)) fail('Eight unique fund/target relevance monitors are required.');
+if (data.monteCarlo.paths!==10000 || data.monteCarlo.months!==120 || !Number.isInteger(data.monteCarlo.seed)) fail('Monte Carlo must use 10,000 seeded paths over 120 months.');
 
 if (errors.length) {
-  errors.forEach((message) => console.error(`VALIDATION FAILED: ${message}`));
-  process.exitCode = 1;
-} else {
-  console.log(`Macro ${macroRate.toFixed(2)}, optimized allocation ${activeAllocation.join('/')}, net CAGR ${calculatedCagr.toFixed(3)}%, weighted historical maximum DD ${calculatedDd.toFixed(2)}%, cap ${expectedCap}%: OK`);
-}
+  errors.forEach((message)=>console.error(`VALIDATION FAILED: ${message}`));
+  process.exitCode=1;
+} else console.log(`Macro ${macroRate.toFixed(2)}; allocation ${activeWeights.join('/')}; net CAGR ${activeCagr.toFixed(3)}%; historical max DD ${activeDd.toFixed(2)}% / ${cap}% cap: OK`);

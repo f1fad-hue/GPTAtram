@@ -1,78 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f5f7fb" />
-    <meta name="description" content="A source-traceable, 10-year ATRAM portfolio research dashboard." />
-    <title>ATRAM Growth Compass</title>
-    <link rel="stylesheet" href="styles.css?v=20260814-02" />
-    <link rel="stylesheet" href="fund-grid.css?v=20260814-02" />
-    <link rel="stylesheet" href="concise.css?v=20260814-02" />
-  </head>
-  <body>
-    <header class="topbar wrap">
-      <a class="brand" href="#top" aria-label="ATRAM Growth Compass home"><span>▲</span> ATRAM <b>GROWTH COMPASS</b></a>
-      <button class="pill" id="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
-    </header>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="A source-traceable four-fund ATRAM portfolio research dashboard.">
+  <title>ATRAM Growth Compass</title>
+  <link rel="stylesheet" href="styles.css?v=20260820">
+  <link rel="stylesheet" href="fund-grid.css?v=20260820">
+  <link rel="stylesheet" href="concise.css?v=20260820">
+</head>
+<body>
+  <header class="topbar wrap"><a class="brand" href="#overview">ATRAM <b>GROWTH COMPASS</b></a><span class="pill">Light dashboard</span></header>
+  <main class="wrap">
+    <section class="hero panel">
+      <div><p class="eyebrow">10-YEAR PHP INVESTOR VIEW</p><h1>Maximum growth<br><em>inside the DD cap.</em></h1><p class="lede">Four required ATRAM funds. Net forecasts. Target-reference historical max DD.</p><div class="badges"><span>12 distinct drivers</span><span>3 / 6 / 12 months</span><span>5% allocation grid</span></div></div>
+      <div class="score-card"><p>Macro portfolio rate</p><strong id="portfolio-rate">--</strong><span id="rating-label"> / 5</span><div class="meter"><i></i></div><small id="rate-detail">Loading verified model</small></div>
+    </section>
 
-    <main id="top" class="wrap">
-      <section class="hero panel">
-        <div>
-          <p class="eyebrow">10-YEAR · PHP INVESTOR VIEW</p>
-          <h1>Maximum growth<br><em>within the DD cap.</em></h1>
-          <p class="lede">Three ATRAM funds. Net forecasts. Verified historical DD.</p>
-          <div class="badges"><span>21 macro drivers</span><span>10-year horizon</span><span>5% allocation grid</span></div>
-        </div>
-        <div class="score-card">
-          <p>Optimized portfolio rate</p>
-          <strong id="portfolio-rate">3.82</strong><span id="rating-label">/ 5 · constructive</span>
-          <div class="meter"><i style="width:76.4%"></i></div>
-          <small id="rate-detail">3-12m macro composite · 20% DD cap</small>
-        </div>
-      </section>
+    <nav class="tabbar" role="tablist" aria-label="Dashboard pages">
+      <button class="tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+      <button class="tab" data-tab="macro" role="tab" aria-selected="false">Macro</button>
+      <button class="tab" data-tab="funds" role="tab" aria-selected="false">Funds</button>
+      <button class="tab" data-tab="monitor" role="tab" aria-selected="false">Monitor</button>
+      <button class="tab" data-tab="sources" role="tab" aria-selected="false">Sources</button>
+    </nav>
 
-      <nav class="tabbar" aria-label="Dashboard sections" role="tablist">
-        <button class="tab active" type="button" data-tab="overview" role="tab" aria-selected="true">Overview</button>
-        <button class="tab" type="button" data-tab="macro" role="tab" aria-selected="false">Macro</button>
-        <button class="tab" type="button" data-tab="research" role="tab" aria-selected="false">Research</button>
-        <button class="tab" type="button" data-tab="monitor" role="tab" aria-selected="false">Monitor</button>
-        <button class="tab" type="button" data-tab="sources" role="tab" aria-selected="false">Sources</button>
-      </nav>
-
-      <section class="metrics" aria-label="Portfolio headline metrics">
-        <article class="metric"><span>Required funds</span><strong id="allocation-total">3 / 3</strong><small>All included</small></article>
-        <article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">7.69%</strong><small>After displayed fees</small></article>
-        <article class="metric"><span>Weighted historical max DD</span><strong id="drawdown">19.96%</strong><small>Simple sum; below cap</small></article>
-      </section>
-
-      <section class="section-heading"><div><p class="eyebrow">THE ANSWER</p><h2>Constrained maximum-growth allocation</h2></div><p id="allocation-constraint">Rate 3.82 selects a 20% DD cap.</p></section>
-      <section class="allocation-grid">
-        <article class="panel allocation-card"><div class="donut large" id="active-donut" aria-label="Current allocation donut"></div><div id="active-allocation" class="allocation-legend"></div></article>
-        <article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Highest forecast growth inside the cap.</h3><p id="rationale-copy">All three funds remain included on the 5% allocation grid.</p></article>
-      </section>
-      <section class="panel dd-math" id="dd-math" aria-label="Drawdown calculation"></section>
-
-      <section class="section-heading"><div><p class="eyebrow">MAXIMUM DISTINCT COVERAGE</p><h2>21-driver macro allocation matrix</h2></div><p>Scores: 1 bearish to 5 bullish.</p></section>
-      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap" id="heatmap"><thead><tr><th>Driver / channel</th><th>3m</th><th>6m</th><th>12m</th><th>Weight</th><th>Money</th><th>Tech</th><th>Nasdaq</th></tr></thead><tbody></tbody></table></div><p class="caption"><b>Fund sensitivity:</b> +2 strong increase · +1 increase · 0 neutral · −1 reduce · −2 strong reduce. Sensitivity is the allocation response when a driver’s score becomes more bullish.</p><details class="coverage-audit"><summary>Coverage audit: 21 retained from 29 screened</summary><p>Only distinct drivers capable of changing at least one required allocation are retained.</p><ul id="excluded-drivers"></ul></details></section>
-
-      <section class="section-heading"><div><p class="eyebrow">RATES 3 / 4 / 5</p><h2>Optimized allocation scenarios</h2></div><p>Each donut maximizes the same fee-adjusted CAGR objective under its DD cap.</p></section>
+    <div data-page="overview">
+      <section class="metrics"><article class="metric"><span>Required funds</span><strong id="allocation-total">4 / 4</strong><small>All included</small></article><article class="metric"><span>10Y net CAGR forecast</span><strong id="cagr-forecast">--</strong><small>After displayed fees</small></article><article class="metric"><span>Historical max DD</span><strong id="drawdown">--</strong><small>Simple weighted sum</small></article></section>
+      <section class="section-heading"><div><p class="eyebrow">OPTIMIZED ANSWER</p><h2>Allocation</h2></div><p id="allocation-constraint"></p></section>
+      <section class="allocation-grid"><article class="panel allocation-card"><div class="donut large" id="active-donut"></div><div id="active-allocation" class="allocation-legend"></div></article><article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Maximum net growth inside the cap</h3><p id="rationale-copy"></p></article></section>
+      <section class="panel dd-math" id="dd-math"></section>
+      <section class="section-heading"><div><p class="eyebrow">RATES 3 / 4 / 5</p><h2>Maximum-growth scenarios</h2></div><p>Each uses the same four funds and its required DD cap.</p></section>
       <section class="scenario-grid" id="scenario-grid"></section>
+    </div>
 
-      <section class="section-heading"><div><p class="eyebrow">FUND LOOK-THROUGH</p><h2>Net CAGR and historical DD</h2></div><p>Three concise fund cards.</p></section>
-      <section class="slides">
-        <div id="slides-track" class="slides-track"></div>
-      </section>
+    <div data-page="macro" hidden>
+      <section class="section-heading"><div><p class="eyebrow">BROAD + CORRELATED</p><h2>12-driver macro matrix</h2></div><p>Only distinct channels that can change these allocations.</p></section>
+      <section class="panel heatmap-wrap"><div class="scroll"><table class="heatmap"><thead><tr><th>Driver / channel</th><th>Type / region</th><th>3m</th><th>6m</th><th>12m</th><th>Weight</th><th>Money</th><th>Tech</th><th>Nasdaq</th><th>Asia</th></tr></thead><tbody id="heatmap-body"></tbody></table></div><p class="caption">Scores: 1 bearish to 5 bullish. Fund sensitivity: -2 reduce strongly to +2 increase strongly. These are model interpretations, not market facts.</p></section>
+      <section class="section-heading"><div><p class="eyebrow">REGIONAL RANKING</p><h2>US, Europe and Asia</h2></div><p>Same 3 / 6 / 12-month inputs; 10-year allocation horizon.</p></section>
+      <section class="regional-grid" id="regional-grid"></section>
+    </div>
 
-      <section class="section-heading"><div><p class="eyebrow">RETURN RANGE</p><h2>10-year Monte Carlo</h2></div><p>10,000 model paths.</p></section>
-      <section class="panel simulation"><canvas id="simulation-chart" width="960" height="360" aria-label="Monte Carlo terminal portfolio value distribution"></canvas><div class="sim-output" id="sim-output"></div><details><summary>Math and limitations</summary><p>Each path compounds monthly lognormal returns: <code>V(t+1)=V(t)×exp((μ−σ²/2)/12 + σ×Z/√12)</code>. This model does not predict returns or fully capture tails, tax, spreads, FX, cash distributions or future fee changes.</p></details></section>
+    <div data-page="funds" hidden>
+      <section class="section-heading"><div><p class="eyebrow">FUND LOOK-THROUGH</p><h2>Fees, net CAGR and max DD</h2></div><p>The portfolio owns the four ATRAM funds; named targets and securities are look-through references, not direct holdings.</p></section>
+      <section class="slides"><div id="slides-track" class="slides-track"></div></section>
+      <section class="section-heading"><div><p class="eyebrow">RETURN RANGE</p><h2>10-year Monte Carlo</h2></div><p>10,000 reproducible paths; not used for historical DD.</p></section>
+      <section class="panel simulation"><canvas id="simulation-chart" width="960" height="360"></canvas><div class="sim-output" id="sim-output"></div><details><summary>Simple math and limitation</summary><p>Each month compounds a randomized return around the net portfolio forecast. It illustrates a range, not a promise, and it does not replace historical maximum drawdown.</p></details></section>
+    </div>
 
-      <section class="section-heading"><div><p class="eyebrow">10-YEAR RELEVANCE MONITOR</p><h2>When each holding stops earning a place</h2></div><p>Triggers initiate investigation; they are not automatic sell orders.</p></section>
-      <section class="panel monitor"><div class="scroll"><table id="monitor-table"><thead><tr><th>Fund / ETF</th><th>Status</th><th>Not-relevant trigger</th><th>Cadence</th></tr></thead><tbody></tbody></table></div></section>
+    <div data-page="monitor" hidden>
+      <section class="section-heading"><div><p class="eyebrow">10-YEAR RELEVANCE MONITOR</p><h2>When each fund or reference stops earning a place</h2></div><p>Triggers start investigation; they are not automatic sell orders.</p></section>
+      <section class="panel monitor"><div class="scroll"><table id="monitor-table"><thead><tr><th>Fund / reference</th><th>Status</th><th>Not-relevant trigger</th><th>Cadence</th></tr></thead><tbody id="monitor-body"></tbody></table></div></section>
+    </div>
 
-      <section class="panel report" id="sources"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion and sources</h2><p id="report-summary">The active model uses a rate-constrained optimizer. Forecasts are model assumptions, not promises or observed facts.</p><div id="source-list" class="source-list"></div><p class="disclaimer">Educational research only; not investment advice. UITFs are not deposits and are not insured by PDIC. Historical results do not guarantee future results. Verify the latest official ATRAM disclosure and suitability before investing.</p></section>
-    </main>
-    <footer class="wrap"><span>Model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Daily cloud verification: loading</span></footer>
-    <script src="app.js?v=20260814-02"></script>
-  </body>
+    <div data-page="sources" hidden>
+      <section class="panel report"><p class="eyebrow">AUDITABLE RESEARCH</p><h2>Conclusion and official sources</h2><p id="report-summary"></p><div id="source-list" class="source-list"></div><p class="disclaimer">Model forecasts are assumptions, not guarantees or personalized investment advice. UITFs are not deposits and are not insured by PDIC. Verify current official disclosures and suitability before investing.</p></section>
+    </div>
+  </main>
+  <footer class="wrap"><span>Model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Daily cloud verification: loading</span></footer>
+  <script src="app.js?v=20260820"></script>
+</body>
 </html>

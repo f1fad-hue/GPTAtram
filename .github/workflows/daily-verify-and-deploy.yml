@@ -34,25 +34,24 @@ jobs:
           node --check scripts/write-monitoring-snapshot.mjs
           git diff --check
           test -f index.html && test -f app.js && test -f styles.css && test -f fund-grid.css && test -f concise.css
-          grep -q 'Net CAGR and historical DD' index.html
-          ! grep -q 'slide-controls' index.html
+          grep -q 'Fees, net CAGR and max DD' index.html
           grep -q 'Monte Carlo' index.html
           grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
-          grep -q 'Philippine inflation and real cash carry' data/portfolio.json
-          grep -q 'US real yields' data/portfolio.json
-          grep -q 'Federal Reserve balance-sheet liquidity' data/portfolio.json
-          grep -q 'Global semiconductor shipment cycle' data/portfolio.json
-          grep -q 'Twenty-one drivers are retained from 29 screened candidates' data/portfolio.json
-          grep -q '"screenedCandidates":29' data/portfolio.json
-          grep -q '"maxDistinctDrivers":21' data/portfolio.json
+          grep -q 'Europe growth, inflation and ECB stance' data/portfolio.json
+          grep -q 'Asia growth, inflation and policy room' data/portfolio.json
+          grep -q 'Asia semiconductor and dividend cycle' data/portfolio.json
+          grep -q '"maxDistinctDrivers":12' data/portfolio.json
           grep -q '"allocationImpact"' data/portfolio.json
           grep -q 'ATRAM Peso Money Market Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Global Technology Feeder Fund - A PHP' data/portfolio.json
           grep -q 'ATRAM Nasdaq Equity Income Feeder Fund - A PHP' data/portfolio.json
+          grep -q 'ATRAM Asia Equity Opportunity Feeder Fund - PHP' data/portfolio.json
           grep -q 'LU1046421795' data/portfolio.json
           grep -q 'IE000U9J8HX9' data/portfolio.json
           grep -q '46654Q203' data/portfolio.json
-          grep -q 'JEPQ is excluded from CAGR and used only for DD' data/portfolio.json
+          grep -q 'HK0000615358' data/portfolio.json
+          grep -q 'HK0000151818' data/portfolio.json
+          grep -q 'JEPQ is excluded from CAGR and used only for historical DD' data/portfolio.json
           grep -q '30% × official UCITS target annualized total return 18.15%' data/portfolio.json
           grep -q '"targetFee":1.89' data/portfolio.json
           grep -q '"targetLevelCagr":10.61' data/portfolio.json
@@ -61,6 +60,7 @@ jobs:
           grep -q '\["Target own fees","1.89% OCF"' data/portfolio.json
           grep -q 'Target-fund historical daily NAV maximum drawdown' data/portfolio.json
           grep -q 'JEPQ historical daily raw-NAV maximum drawdown proxy' data/portfolio.json
+          grep -q 'Target-fund accumulating-share historical daily NAV maximum drawdown' data/portfolio.json
           grep -q '"basis":"historicalMaximumDrawdownOnly"' data/portfolio.json
           grep -q '"aggregation":"simpleWeightedSum"' data/portfolio.json
           ! grep -q 'forwardP50' data/portfolio.json

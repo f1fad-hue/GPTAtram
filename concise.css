@@ -46,6 +46,21 @@
   font-weight: 850;
 }
 
+.regional-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.regional { position: relative; padding: 22px; }
+.regional .rank { position: absolute; right: 18px; top: 18px; color: var(--cyan); font-weight: 850; }
+.regional h3 { margin: 0; font-size: 1.6rem; }
+.regional p:last-child { color: var(--muted); font-size: .8rem; }
+.region-scores { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.region-scores span { background: #f2f7fa; border: 1px solid var(--line); border-radius: 9px; padding: 5px 8px; color: var(--muted); font-size: .72rem; }
+.heatmap td:nth-child(2) small { display: block; color: var(--muted); font-size: .68rem; }
+.scenario > small { display: block; margin-top: 8px; color: var(--muted); font-size: .72rem; text-align: center; }
+
 .coverage-audit {
   margin: 0 3px 13px;
   color: var(--muted);
@@ -87,4 +102,6 @@
   .section-heading {
     margin-top: 32px;
   }
+
+  .regional-grid { grid-template-columns: 1fr; }
 }

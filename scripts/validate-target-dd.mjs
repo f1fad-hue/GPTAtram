@@ -1,33 +1,25 @@
 import { readFile } from 'node:fs/promises';
 
 const portfolio = JSON.parse(await readFile(new URL('../data/portfolio.json', import.meta.url)));
-const endpoint = 'https://am.jpmorgan.com/FundsMarketingHandler/historicalData?cusip=46654Q203&country=us&role=adv&userLoggedIn=false&language=en&version=9.14';
-const response = await fetch(endpoint, {
-  headers: { 'user-agent':'ATRAM-Growth-Compass-Target-DD/1.0' },
-  redirect: 'follow',
-  signal: AbortSignal.timeout(60000)
-});
-if (!response.ok) throw new Error(`JPM target history returned HTTP ${response.status}.`);
-const data = await response.json();
-const rows = data.historicalETFNAVMarketPriceList;
-if (!Array.isArray(rows) || rows.length < 250) throw new Error('JEPQ history does not contain a usable daily NAV series.');
+const stored = Object.fromEntries(portfolio.drawdownModel.funds.map((fund) => [fund.id,fund]));
+const endpoints = [
+  { id:'nasdaq', label:'JEPQ raw NAV proxy', url:'https://am.jpmorgan.com/FundsMarketingHandler/historicalData?cusip=46654Q203&country=us&role=adv&userLoggedIn=false&language=en&version=9.14', field:'historicalETFNAVMarketPriceList', value:'navPrice', source:'jepqHistory', minimum:250 },
+  { id:'asia', label:'JPM Asia Equity Dividend (acc) USD target', url:'https://am.jpmorgan.com/FundsMarketingHandler/historicalData?cusip=HK0000151818&country=hk&role=adv&userLoggedIn=false&language=en&version=9.14', field:'historicalNAVList', value:'navPrice', source:'jpmAsiaHistory', minimum:1000 }
+];
 
-let peak = -Infinity;
-let peakDate;
-let maximum = { drawdown:0, peakDate, troughDate:peakDate };
-for (const row of rows) {
-  if (!Number.isFinite(row.navPrice)) throw new Error(`Invalid JEPQ NAV at ${row.date}.`);
-  if (row.navPrice > peak) {
-    peak = row.navPrice;
-    peakDate = row.date;
+for (const target of endpoints) {
+  const response = await fetch(target.url,{headers:{'user-agent':'ATRAM-Growth-Compass-Target-DD/2.0'},redirect:'follow',signal:AbortSignal.timeout(60000)});
+  if (!response.ok) throw new Error(`${target.label} returned HTTP ${response.status}.`);
+  const payload = await response.json(); const rows = payload[target.field];
+  if (!Array.isArray(rows) || rows.length < target.minimum) throw new Error(`${target.label} does not contain a usable daily NAV series.`);
+  let peak=-Infinity; let peakDate; let maximum={drawdown:0};
+  for (const row of rows) {
+    const value=Number(row[target.value]); if (!Number.isFinite(value)) throw new Error(`${target.label}: invalid NAV at ${row.date}.`);
+    if (value>peak) { peak=value; peakDate=row.date; }
+    const drawdown=(peak-value)/peak*100;
+    if (drawdown>maximum.drawdown) maximum={drawdown,peakDate,troughDate:row.date};
   }
-  const drawdown = (peak - row.navPrice) / peak * 100;
-  if (drawdown > maximum.drawdown) maximum = { drawdown, peakDate, troughDate:row.date };
+  if (!stored[target.id]?.sourceIds?.includes(target.source)) throw new Error(`${target.id} DD is not mapped to ${target.source}.`);
+  if (Math.abs(stored[target.id].historical-maximum.drawdown)>.02) throw new Error(`Stored ${target.label} DD ${stored[target.id].historical.toFixed(4)}% differs from current official MDD ${maximum.drawdown.toFixed(4)}%. Re-optimize before deployment.`);
+  console.log(`${target.label}: ${rows.length} records, MDD ${maximum.drawdown.toFixed(4)}% (${maximum.peakDate} to ${maximum.troughDate}) verified.`);
 }
-
-const stored = portfolio.drawdownModel.funds.find((fund) => fund.id === 'nasdaq');
-if (!stored?.sourceIds?.includes('jepqHistory')) throw new Error('Nasdaq DD is not mapped to the official JEPQ strategy-proxy history source.');
-if (Math.abs(stored.historical - maximum.drawdown) > 0.02) {
-  throw new Error(`Stored JEPQ proxy DD ${stored.historical.toFixed(4)}% differs from current official daily raw-NAV MDD ${maximum.drawdown.toFixed(4)}%. Update and re-optimize before deployment.`);
-}
-console.log(`JEPQ strategy proxy ${rows.length}-day raw-NAV MDD ${maximum.drawdown.toFixed(4)}% (${maximum.peakDate} to ${maximum.troughDate}): verified; not distribution-adjusted.`);
