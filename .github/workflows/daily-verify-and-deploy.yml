@@ -36,6 +36,7 @@ jobs:
           test -f index.html && test -f app.js && test -f styles.css && test -f fund-grid.css && test -f concise.css
           grep -q 'Fees, net CAGR and max DD' index.html
           grep -q 'Monte Carlo' index.html
+          grep -q 'Robust CAGR floor' index.html
           grep -q 'Federal Reserve policy and liquidity' data/portfolio.json
           grep -q 'Europe growth, inflation and ECB stance' data/portfolio.json
           grep -q 'Asia growth, inflation and policy room' data/portfolio.json
@@ -63,6 +64,9 @@ jobs:
           grep -q 'Target-fund accumulating-share historical daily NAV maximum drawdown' data/portfolio.json
           grep -q '"basis":"historicalMaximumDrawdownOnly"' data/portfolio.json
           grep -q '"aggregation":"simpleWeightedSum"' data/portfolio.json
+          grep -q '"maximumFundWeight":60' data/portfolio.json
+          grep -q '"drawdownReserve":1' data/portfolio.json
+          grep -q '"status":"diagnosticPending"' data/portfolio.json
           ! grep -q 'forwardP50' data/portfolio.json
           ! grep -q '"correlations"' data/portfolio.json
       - name: Publish the daily audit evidence

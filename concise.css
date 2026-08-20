@@ -1,5 +1,5 @@
 .metrics {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   margin-bottom: 42px;
 }
 
@@ -21,6 +21,27 @@
 .dd-math {
   padding: 18px;
 }
+
+.robust-method {
+  margin-top: 12px;
+  padding: 18px;
+}
+
+.robust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.robust-grid div {
+  background: #f2f7fa;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.robust-grid b, .robust-grid small { display: block; }
+.robust-grid small { color: var(--muted); margin-top: 4px; }
 
 .dd-math table {
   min-width: 600px;
@@ -94,6 +115,8 @@
   .metrics .metric:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
+
+  .robust-grid { grid-template-columns: 1fr 1fr; }
 
   .hero {
     padding: 22px;

@@ -63,7 +63,18 @@ if (process.env.SKIP_REMOTE_CHECK !== '1') {
     }
     return { source, error:lastError };
   };
-  const results = await Promise.all(registry.sources.map(retrieve));
+  // Limit concurrent official downloads so large PDFs do not starve one another
+  // and create false timeout failures on otherwise healthy authoritative URLs.
+  const results = Array(registry.sources.length);
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < registry.sources.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await retrieve(registry.sources[index]);
+    }
+  };
+  await Promise.all(Array.from({ length:Math.min(4,registry.sources.length) },worker));
   for (const result of results) {
     const { source } = result;
     if (result.error) { fail(`${source.id}: retrieval failed after retry (${result.error.message}).`); continue; }

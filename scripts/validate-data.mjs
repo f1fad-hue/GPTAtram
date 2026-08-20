@@ -10,7 +10,7 @@ const allocation = data.portfolio.allocation;
 const ids = allocation.map((item) => item.id);
 
 if (ids.length !== 4 || new Set(ids).size !== 4 || !requiredIds.every((id) => ids.includes(id))) fail('Allocation must contain all four required funds exactly once.');
-if (sum(allocation.map((item) => item.weight)) !== 100 || allocation.some((item) => item.weight < 5 || item.weight % 5)) fail('Allocation must total 100%, include every fund at 5% or more and use the 5% grid.');
+if (sum(allocation.map((item) => item.weight)) !== 100 || allocation.some((item) => item.weight < data.optimizer.minimumFundWeight || item.weight > data.optimizer.maximumFundWeight || item.weight % data.optimizer.gridStep)) fail('Allocation must total 100% and obey the configured minimum, maximum and grid constraints.');
 if (!allocation.find((item) => item.id === 'asia')?.name.includes('Asia Equity Opportunity')) fail('The Asia Equity Opportunity fund is required.');
 
 if (data.fundModels.length !== 4 || new Set(data.fundModels.map((fund) => fund.id)).size !== 4) fail('Four unique fee-adjusted CAGR models are required.');
@@ -72,26 +72,38 @@ const ddPercent = Object.fromEntries(dd.funds.map((fund) => [fund.id,fund.histor
 const cagrPercent = Object.fromEntries(data.fundModels.map((fund) => [fund.id,fund.netCagr]));
 const portfolioDd = (weights) => sum(weights.map((weight,index) => weight/100*ddPercent[ids[index]]));
 const portfolioCagr = (weights) => sum(weights.map((weight,index) => weight/100*cagrPercent[ids[index]]));
+const robust = data.robustMethod;
+if (!robust || data.optimizer.maximumFundWeight !== 60 || data.optimizer.drawdownReserve !== 1 || robust.returnScenarios?.length !== 3) fail('Robust optimization requires three return cases, a 60% concentration ceiling and a one-point DD reserve.');
+if (robust?.cdar?.useInOptimization !== false || robust?.cdar?.status !== 'diagnosticPending' || !/synchronized common-date official NAV/i.test(robust?.cdar?.reason || '')) fail('CDaR must remain diagnostic-only until synchronized common-date official NAV evidence is reproducible.');
+for (const scenario of robust?.returnScenarios || []) {
+  if (!scenario.id || !scenario.label || requiredIds.some((id) => !Number.isFinite(scenario.fundCagr?.[id]))) fail(`${scenario.id || 'robust scenario'}: all four return inputs are required.`);
+}
+const baseCase = robust?.returnScenarios?.find((scenario) => scenario.id === 'base');
+if (!baseCase || requiredIds.some((id) => !close(baseCase.fundCagr[id],cagrPercent[id],1e-9))) fail('The robust base case must equal the verified fund CAGR inputs.');
+const portfolioScenarioCagr = (weights,scenario) => sum(weights.map((weight,index) => weight/100*scenario.fundCagr[ids[index]]));
+const portfolioRobustCagr = (weights) => Math.min(...robust.returnScenarios.map((scenario) => portfolioScenarioCagr(weights,scenario)));
 function optimize(limit) {
   let best;
-  for (let a=5;a<=85;a+=5) for (let b=5;b<=85;b+=5) for (let c=5;c<=85;c+=5) {
+  const floor=data.optimizer.minimumFundWeight, ceiling=data.optimizer.maximumFundWeight, step=data.optimizer.gridStep;
+  for (let a=floor;a<=ceiling;a+=step) for (let b=floor;b<=ceiling;b+=step) for (let c=floor;c<=ceiling;c+=step) {
     const d=100-a-b-c;
-    if (d<5 || d%5) continue;
-    const weights=[a,b,c,d]; const loss=portfolioDd(weights); const growth=portfolioCagr(weights);
-    if (loss<=limit+1e-12 && (!best || growth>best.growth+1e-12)) best={weights,loss,growth};
+    if (d<floor || d>ceiling || d%step) continue;
+    const weights=[a,b,c,d]; const loss=portfolioDd(weights); const growth=portfolioCagr(weights); const robustGrowth=portfolioRobustCagr(weights);
+    const equal=(left,right)=>Math.abs(left-right)<=1e-12;
+    if (loss<=limit-data.optimizer.drawdownReserve+1e-12 && (!best || robustGrowth>best.robustGrowth+1e-12 || (equal(robustGrowth,best.robustGrowth) && (growth>best.growth+1e-12 || (equal(growth,best.growth) && loss<best.loss-1e-12))))) best={weights,loss,growth,robustGrowth};
   }
   return best;
 }
 const activeWeights = allocation.map((item) => item.weight);
-const activeDd = portfolioDd(activeWeights); const activeCagr = portfolioCagr(activeWeights); const activeBest=optimize(cap);
+const activeDd = portfolioDd(activeWeights); const activeCagr = portfolioCagr(activeWeights); const activeRobustCagr=portfolioRobustCagr(activeWeights); const activeBest=optimize(cap);
 if (activeBest.weights.some((value,index) => value!==activeWeights[index])) fail(`Active allocation is not optimal; expected ${activeBest.weights.join('/')}.`);
-if (!close(activeDd,data.portfolio.drawdown,1e-6) || !close(activeCagr,data.portfolio.netCagrForecast)) fail('Stored portfolio DD or CAGR is inconsistent.');
-if (activeDd>cap) fail('Active allocation exceeds its DD cap.');
+if (!close(activeDd,data.portfolio.drawdown,1e-6) || !close(activeCagr,data.portfolio.netCagrForecast) || !close(activeRobustCagr,data.portfolio.robustCagrFloor,1e-6)) fail('Stored portfolio DD, base CAGR or robust CAGR floor is inconsistent.');
+if (data.portfolio.operationalDrawdownLimit !== cap-data.optimizer.drawdownReserve || activeDd>data.portfolio.operationalDrawdownLimit) fail('Active allocation exceeds its operational DD limit or the stored limit is wrong.');
 const caps = new Map([['3.00-3.99',20],['4.00-4.99',25],['5.00',30]]);
 if (data.scenarios.length!==3) fail('Exactly three rate scenarios are required.');
 for (const scenario of data.scenarios) {
   const expectedCap=caps.get(scenario.rate); const best=optimize(expectedCap);
-  if (!expectedCap || scenario.cap!==expectedCap || best.weights.some((value,index)=>value!==scenario.allocation[index]) || !close(best.loss,scenario.dd) || !close(best.growth,scenario.netCagr)) fail(`${scenario.rate}: scenario is not the maximum-growth feasible solution.`);
+  if (!expectedCap || scenario.cap!==expectedCap || scenario.operationalCap!==expectedCap-data.optimizer.drawdownReserve || best.weights.some((value,index)=>value!==scenario.allocation[index]) || !close(best.loss,scenario.dd) || !close(best.growth,scenario.netCagr) || !close(best.robustGrowth,scenario.robustCagr)) fail(`${scenario.rate}: scenario is not the robust maximum-growth feasible solution.`);
 }
 
 if (data.slides.length!==4 || data.slides.some((slide)=>slide.facts.length<4 || !slide.sources?.length)) fail('Four concise fund cards with fees, CAGR, DD and sources are required.');
@@ -101,4 +113,4 @@ if (data.monteCarlo.paths!==10000 || data.monteCarlo.months!==120 || !Number.isI
 if (errors.length) {
   errors.forEach((message)=>console.error(`VALIDATION FAILED: ${message}`));
   process.exitCode=1;
-} else console.log(`Macro ${macroRate.toFixed(2)}; allocation ${activeWeights.join('/')}; net CAGR ${activeCagr.toFixed(3)}%; historical max DD ${activeDd.toFixed(2)}% / ${cap}% cap: OK`);
+} else console.log(`Macro ${macroRate.toFixed(2)}; allocation ${activeWeights.join('/')}; base CAGR ${activeCagr.toFixed(3)}%; robust floor ${activeRobustCagr.toFixed(3)}%; historical max DD ${activeDd.toFixed(2)}% / ${data.portfolio.operationalDrawdownLimit}% operational limit: OK`);
