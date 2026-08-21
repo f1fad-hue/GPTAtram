@@ -89,7 +89,7 @@ if (process.env.SKIP_REMOTE_CHECK !== '1') {
 
 const timestamp = new Date().toISOString();
 const lines = [
-  '# Daily authoritative-source audit', '', `Generated: ${timestamp}`, '',
+  '# Weekend authoritative-source audit', '', `Generated: ${timestamp}`, '',
   `Result: **${errors.length ? 'FAILED' : 'PASSED'}**`, '',
   '## Scope',
   '- Factual claims, macro inputs, fee/DD inputs and every displayed source link must map to an approved authoritative source.',
@@ -100,7 +100,7 @@ const lines = [
   '## Warnings', ...(warnings.length ? warnings.map((warning) => `- ${warning}`) : ['- None']), '',
   '## Failures', ...(errors.length ? errors.map((error) => `- ${error}`) : ['- None'])
 ];
-const report = process.env.AUDIT_REPORT_PATH ?? 'reports/daily-authoritative-audit.md';
+const report = process.env.AUDIT_REPORT_PATH ?? 'reports/weekend-authoritative-audit.md';
 await mkdir(dirname(resolve(report)), { recursive:true });
 await writeFile(report, `${lines.join('\n')}\n`);
 console.log(`Authoritative-source audit ${errors.length ? 'FAILED' : 'PASSED'}: ${report}`);

@@ -11,7 +11,7 @@ function selectTab(name) {
 tabs.forEach((tab)=>tab.addEventListener('click',()=>selectTab(tab.dataset.tab)));
 selectTab(location.hash.slice(1));
 
-fetch('data/portfolio.json?v=20260820-robust',{cache:'no-store'}).then((response)=>{
+fetch('data/portfolio.json?v=20260821-weekend',{cache:'no-store'}).then((response)=>{
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data)=>{
@@ -45,8 +45,8 @@ fetch('data/portfolio.json?v=20260820-robust',{cache:'no-store'}).then((response
 
 fetch('data/monitoring.json',{cache:'no-store'}).then((response)=>response.ok?response.json():Promise.reject()).then((snapshot)=>{
   const checked=new Date(snapshot.verifiedAt).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
-  $('#monitoring-status').innerHTML=`Daily verification: <a href="${snapshot.runUrl}" target="_blank" rel="noreferrer">passed ${checked}</a>`;
-}).catch(()=>{ $('#monitoring-status').textContent='Daily verification: awaiting next run'; });
+  $('#monitoring-status').innerHTML=`Weekend verification: <a href="${snapshot.runUrl}" target="_blank" rel="noreferrer">passed ${checked}</a>`;
+}).catch(()=>{ $('#monitoring-status').textContent='Weekend verification: awaiting next run'; });
 
 function macroRate(data) {
   const h=data.macroModel.horizonWeights;
