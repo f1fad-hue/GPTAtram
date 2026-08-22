@@ -11,12 +11,12 @@ function selectTab(name) {
 tabs.forEach((tab)=>tab.addEventListener('click',()=>selectTab(tab.dataset.tab)));
 selectTab(location.hash.slice(1));
 
-fetch('data/portfolio.json?v=20260821-weekend',{cache:'no-store'}).then((response)=>{
+fetch('data/portfolio.json?v=20260821-cushion',{cache:'no-store'}).then((response)=>{
   if (!response.ok) throw new Error(`Portfolio data unavailable: ${response.status}`);
   return response.json();
 }).then((data)=>{
   const weights=data.portfolio.allocation.map((item)=>item.weight);
-  const rate=macroRate(data); const dd=portfolioDd(data,weights); const growth=portfolioCagr(data,weights); const robustGrowth=portfolioRobustCagr(data,weights);
+  const rate=macroRate(data); const cushion=macroCushion(data,rate); const dd=portfolioDd(data,weights); const growth=portfolioCagr(data,weights); const robustGrowth=portfolioRobustCagr(data,weights);
   $('#portfolio-rate').textContent=rate.toFixed(2);
   $('#rating-label').textContent=` / 5 - ${data.portfolio.ratingLabel}`;
   $('.meter i').style.width=`${rate/5*100}%`;
@@ -25,9 +25,9 @@ fetch('data/portfolio.json?v=20260821-weekend',{cache:'no-store'}).then((respons
   $('#cagr-forecast').textContent=fmt(growth);
   $('#robust-cagr').textContent=fmt(robustGrowth);
   $('#drawdown').textContent=fmt(dd);
-  $('#allocation-constraint').innerHTML=`Rate <b>${rate.toFixed(2)}</b> selects the <b>${data.portfolio.rateBand}</b> band: <b>${data.portfolio.operationalDrawdownLimit}%</b> operational limit below the <b>${data.portfolio.drawdownCap}%</b> user cap.`;
-  $('#rationale-copy').textContent=`The exhaustive 5% grid maximizes the worst CAGR across three documented return cases: ${robustGrowth.toFixed(2)}% robust floor and ${growth.toFixed(2)}% base CAGR. Historical DD is ${dd.toFixed(2)}%; every fund stays included and no fund may exceed ${data.optimizer.maximumFundWeight}%.`;
-  $('#report-summary').innerHTML=`The current broad and correlated macro score is <b>${rate.toFixed(2)} / 5</b>. The robust solution has a <b>${robustGrowth.toFixed(2)}% worst documented CAGR</b>, <b>${growth.toFixed(2)}% base CAGR</b>, and <b>${dd.toFixed(2)}% historical maximum-DD proxy</b>. Return stresses, concentration and reserve are model policies. CDaR is not an active constraint because synchronized official common-date NAV evidence is incomplete.`;
+  $('#allocation-constraint').innerHTML=`Rate <b>${rate.toFixed(2)}</b> requires at least <b>${cushion}% Money Market</b> and selects a <b>${data.portfolio.operationalDrawdownLimit}%</b> operating limit below the <b>${data.portfolio.drawdownCap}%</b> user cap.`;
+  $('#rationale-copy').textContent=`The macro score sets only the liquidity floor; it does not choose the whole portfolio. Above that ${cushion}% minimum, the exhaustive 5% grid maximizes the worst CAGR across three return cases: ${robustGrowth.toFixed(2)}% robust and ${growth.toFixed(2)}% base. Historical DD is ${dd.toFixed(2)}%.`;
+  $('#report-summary').innerHTML=`The current broad and correlated macro score is <b>${rate.toFixed(2)} / 5</b>, producing a <b>${cushion}% minimum Money Market cushion</b>. The robust solution has a <b>${robustGrowth.toFixed(2)}% worst documented CAGR</b>, <b>${growth.toFixed(2)}% base CAGR</b>, and <b>${dd.toFixed(2)}% historical maximum-DD proxy</b>. The cushion, return stresses, concentration limit and reserve are transparent model policies. CDaR is not active because synchronized official common-date NAV evidence is incomplete.`;
   $('#as-of').textContent=new Date(`${data.asOf}T00:00:00`).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
 
   renderDonut($('#active-donut'),data.portfolio.allocation);
@@ -52,6 +52,12 @@ function macroRate(data) {
   const h=data.macroModel.horizonWeights;
   return data.drivers.reduce((total,driver)=>total+(driver.values[0]*h.threeMonth+driver.values[1]*h.sixMonth+driver.values[2]*h.twelveMonth)*data.macroModel.driverWeights[driver.id],0);
 }
+function macroCushion(data,rate) {
+  const policy=data.optimizer.macroCushion;
+  const raw=policy.baseFloor+policy.slopePerRatePoint*(5-rate);
+  const rounded=policy.roundUpToGrid?Math.ceil((raw-1e-12)/data.optimizer.gridStep)*data.optimizer.gridStep:raw;
+  return Math.min(policy.maximum,Math.max(policy.minimum,rounded));
+}
 function portfolioDd(data,weights) {
   const inputs=Object.fromEntries(data.drawdownModel.funds.map((fund)=>[fund.id,fund.historical]));
   return data.portfolio.allocation.reduce((total,item,index)=>total+weights[index]/100*inputs[item.id],0);
@@ -73,11 +79,12 @@ function renderDdMath(data,total) {
 }
 function renderRobustMethod(data,robustGrowth) {
   const cdar=data.robustMethod.cdar;
-  $('#robust-method').innerHTML=`<p class="eyebrow">ROBUST GUARDRAILS</p><div class="robust-grid"><div><b>${robustGrowth.toFixed(2)}% CAGR</b><small>Worst of ${data.robustMethod.returnScenarios.length} return cases</small></div><div><b>${data.optimizer.maximumFundWeight}% maximum</b><small>Single-fund concentration</small></div><div><b>${data.optimizer.drawdownReserve}-point reserve</b><small>Below the user DD cap</small></div><div><b>CDaR: pending</b><small>${cdar.confidence*100}% confidence; diagnostic only until synchronized official NAV data are reproducible</small></div></div>`;
+  const cushion=macroCushion(data,macroRate(data));
+  $('#robust-method').innerHTML=`<p class="eyebrow">ROBUST + MACRO GUARDRAILS</p><div class="robust-grid"><div><b>${robustGrowth.toFixed(2)}% CAGR</b><small>Worst of ${data.robustMethod.returnScenarios.length} return cases</small></div><div><b>${cushion}% cushion</b><small>Current minimum Money Market weight</small></div><div><b>${data.optimizer.maximumFundWeight}% maximum</b><small>Single-fund concentration</small></div><div><b>${data.optimizer.drawdownReserve}-point reserve</b><small>Below the user DD cap</small></div></div><p class="caption">CDaR remains diagnostic only (${cdar.confidence*100}% confidence setting) until synchronized official NAV data are reproducible.</p>`;
 }
 function renderScenarios(data) {
   const colors=data.portfolio.allocation.map((item)=>item.color);
-  $('#scenario-grid').innerHTML=data.scenarios.map((scenario)=>`<article class="scenario panel"><header><div><p class="eyebrow">RATE ${scenario.rate}</p><h3>${scenario.label}</h3></div><b>${scenario.operationalCap}% operational</b></header><div class="donut"></div><p>${data.portfolio.allocation.map((item,index)=>`${item.id==='money'?'Money':item.id==='tech'?'Tech':item.id==='nasdaq'?'Nasdaq':'Asia'} ${scenario.allocation[index]}%`).join(' - ')}</p><small>${scenario.dd.toFixed(2)}% DD · ${scenario.robustCagr.toFixed(2)}% robust · ${scenario.netCagr.toFixed(2)}% base CAGR</small></article>`).join('');
+  $('#scenario-grid').innerHTML=data.scenarios.map((scenario)=>`<article class="scenario panel"><header><div><p class="eyebrow">RATE ${scenario.rate.toFixed(2)}</p><h3>${scenario.label}</h3></div><b>${scenario.operationalCap}% operational</b></header><div class="donut"></div><p>${data.portfolio.allocation.map((item,index)=>`${item.id==='money'?'Money':item.id==='tech'?'Tech':item.id==='nasdaq'?'Nasdaq':'Asia'} ${scenario.allocation[index]}%`).join(' - ')}</p><small>${scenario.macroCushion}% Money floor · ${scenario.dd.toFixed(2)}% DD · ${scenario.robustCagr.toFixed(2)}% robust · ${scenario.netCagr.toFixed(2)}% base</small></article>`).join('');
   document.querySelectorAll('.scenario .donut').forEach((node,index)=>renderDonut(node,data.scenarios[index].allocation.map((weight,colorIndex)=>({weight,color:colors[colorIndex]}))));
 }
 function renderMacro(data) {

@@ -82,28 +82,40 @@ const baseCase = robust?.returnScenarios?.find((scenario) => scenario.id === 'ba
 if (!baseCase || requiredIds.some((id) => !close(baseCase.fundCagr[id],cagrPercent[id],1e-9))) fail('The robust base case must equal the verified fund CAGR inputs.');
 const portfolioScenarioCagr = (weights,scenario) => sum(weights.map((weight,index) => weight/100*scenario.fundCagr[ids[index]]));
 const portfolioRobustCagr = (weights) => Math.min(...robust.returnScenarios.map((scenario) => portfolioScenarioCagr(weights,scenario)));
-function optimize(limit) {
+const cushionPolicy=data.optimizer.macroCushion;
+if (!cushionPolicy || cushionPolicy.fundId !== 'money' || cushionPolicy.baseFloor !== 5 || cushionPolicy.slopePerRatePoint !== 10 || cushionPolicy.minimum !== 5 || cushionPolicy.maximum !== 25 || cushionPolicy.roundUpToGrid !== true) fail('The proportional Money Market cushion policy is missing or malformed.');
+const cushionFundIndex=ids.indexOf(cushionPolicy?.fundId);
+function macroCushion(rate) {
+  const raw=cushionPolicy.baseFloor+cushionPolicy.slopePerRatePoint*(5-rate);
+  const rounded=cushionPolicy.roundUpToGrid ? Math.ceil((raw-1e-12)/data.optimizer.gridStep)*data.optimizer.gridStep : raw;
+  return Math.min(cushionPolicy.maximum,Math.max(cushionPolicy.minimum,rounded));
+}
+function optimize(limit,rate) {
   let best;
+  const requiredCushion=macroCushion(rate);
   const floor=data.optimizer.minimumFundWeight, ceiling=data.optimizer.maximumFundWeight, step=data.optimizer.gridStep;
   for (let a=floor;a<=ceiling;a+=step) for (let b=floor;b<=ceiling;b+=step) for (let c=floor;c<=ceiling;c+=step) {
     const d=100-a-b-c;
     if (d<floor || d>ceiling || d%step) continue;
     const weights=[a,b,c,d]; const loss=portfolioDd(weights); const growth=portfolioCagr(weights); const robustGrowth=portfolioRobustCagr(weights);
+    if (weights[cushionFundIndex]<requiredCushion) continue;
     const equal=(left,right)=>Math.abs(left-right)<=1e-12;
     if (loss<=limit-data.optimizer.drawdownReserve+1e-12 && (!best || robustGrowth>best.robustGrowth+1e-12 || (equal(robustGrowth,best.robustGrowth) && (growth>best.growth+1e-12 || (equal(growth,best.growth) && loss<best.loss-1e-12))))) best={weights,loss,growth,robustGrowth};
   }
   return best;
 }
 const activeWeights = allocation.map((item) => item.weight);
-const activeDd = portfolioDd(activeWeights); const activeCagr = portfolioCagr(activeWeights); const activeRobustCagr=portfolioRobustCagr(activeWeights); const activeBest=optimize(cap);
+const activeCushion=macroCushion(macroRate);
+const activeDd = portfolioDd(activeWeights); const activeCagr = portfolioCagr(activeWeights); const activeRobustCagr=portfolioRobustCagr(activeWeights); const activeBest=optimize(cap,macroRate);
 if (activeBest.weights.some((value,index) => value!==activeWeights[index])) fail(`Active allocation is not optimal; expected ${activeBest.weights.join('/')}.`);
 if (!close(activeDd,data.portfolio.drawdown,1e-6) || !close(activeCagr,data.portfolio.netCagrForecast) || !close(activeRobustCagr,data.portfolio.robustCagrFloor,1e-6)) fail('Stored portfolio DD, base CAGR or robust CAGR floor is inconsistent.');
 if (data.portfolio.operationalDrawdownLimit !== cap-data.optimizer.drawdownReserve || activeDd>data.portfolio.operationalDrawdownLimit) fail('Active allocation exceeds its operational DD limit or the stored limit is wrong.');
-const caps = new Map([['3.00-3.99',20],['4.00-4.99',25],['5.00',30]]);
+if (activeWeights[cushionFundIndex]<activeCushion) fail(`Active Money Market allocation is below the ${activeCushion}% macro cushion.`);
+const caps = new Map([[3,20],[4,25],[5,30]]);
 if (data.scenarios.length!==3) fail('Exactly three rate scenarios are required.');
 for (const scenario of data.scenarios) {
-  const expectedCap=caps.get(scenario.rate); const best=optimize(expectedCap);
-  if (!expectedCap || scenario.cap!==expectedCap || scenario.operationalCap!==expectedCap-data.optimizer.drawdownReserve || best.weights.some((value,index)=>value!==scenario.allocation[index]) || !close(best.loss,scenario.dd) || !close(best.growth,scenario.netCagr) || !close(best.robustGrowth,scenario.robustCagr)) fail(`${scenario.rate}: scenario is not the robust maximum-growth feasible solution.`);
+  const expectedCap=caps.get(scenario.rate); const expectedCushion=macroCushion(scenario.rate); const best=optimize(expectedCap,scenario.rate);
+  if (!expectedCap || scenario.macroCushion!==expectedCushion || scenario.cap!==expectedCap || scenario.operationalCap!==expectedCap-data.optimizer.drawdownReserve || best.weights.some((value,index)=>value!==scenario.allocation[index]) || !close(best.loss,scenario.dd) || !close(best.growth,scenario.netCagr) || !close(best.robustGrowth,scenario.robustCagr)) fail(`${scenario.rate}: scenario is not the robust macro-cushioned maximum-growth feasible solution.`);
 }
 
 if (data.slides.length!==4 || data.slides.some((slide)=>slide.facts.length<4 || !slide.sources?.length)) fail('Four concise fund cards with fees, CAGR, DD and sources are required.');
@@ -113,4 +125,4 @@ if (data.monteCarlo.paths!==10000 || data.monteCarlo.months!==120 || !Number.isI
 if (errors.length) {
   errors.forEach((message)=>console.error(`VALIDATION FAILED: ${message}`));
   process.exitCode=1;
-} else console.log(`Macro ${macroRate.toFixed(2)}; allocation ${activeWeights.join('/')}; base CAGR ${activeCagr.toFixed(3)}%; robust floor ${activeRobustCagr.toFixed(3)}%; historical max DD ${activeDd.toFixed(2)}% / ${data.portfolio.operationalDrawdownLimit}% operational limit: OK`);
+} else console.log(`Macro ${macroRate.toFixed(2)}; Money Market cushion ${activeCushion}%; allocation ${activeWeights.join('/')}; base CAGR ${activeCagr.toFixed(3)}%; robust floor ${activeRobustCagr.toFixed(3)}%; historical max DD ${activeDd.toFixed(2)}% / ${data.portfolio.operationalDrawdownLimit}% operational limit: OK`);

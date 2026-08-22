@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-08-20",
+  "asOf": "2026-08-21",
   "portfolio": {
     "rate": 3.54,
     "rateBand": "3.00-3.99",
@@ -17,7 +17,16 @@
       {"id":"asia","name":"ATRAM Asia Equity Opportunity Feeder Fund - PHP","weight":5,"color":"#7656c9"}
     ]
   },
-  "optimizer": {"objective":"Maximize the worst portfolio CAGR across the documented base and return-stress cases, then prefer higher base CAGR and lower DD, subject to robust risk guardrails.","gridStep":5,"minimumFundWeight":5,"maximumFundWeight":60,"drawdownReserve":1,"allRequired":true,"tieBreak":"Higher base CAGR, then lower weighted historical DD."},
+  "optimizer": {
+    "objective":"Maximize the worst portfolio CAGR across the documented base and return-stress cases, then prefer higher base CAGR and lower DD, subject to robust risk guardrails and a proportional macro-driven liquidity cushion.",
+    "gridStep":5,
+    "minimumFundWeight":5,
+    "maximumFundWeight":60,
+    "drawdownReserve":1,
+    "allRequired":true,
+    "tieBreak":"Higher base CAGR, then lower weighted historical DD.",
+    "macroCushion":{"fundId":"money","baseFloor":5,"slopePerRatePoint":10,"minimum":5,"maximum":25,"roundUpToGrid":true,"formula":"Money Market floor = ceil to the 5% grid of [5% + 10% x (5 - macro rate)], bounded from 5% to 25%.","role":"A secondary risk guardrail; the 3/6/12-month macro score cannot override the historical-DD limit or the robust 10-year CAGR objective."}
+  },
   "robustMethod": {
     "label":"Robust max-growth with dual guardrails",
     "returnScenarios":[
@@ -25,9 +34,9 @@
       {"id":"returnStress","label":"Forecast stress: Money Market retains 90%; equity sleeves retain 75%","fundCagr":{"money":3.123,"tech":7.02,"nasdaq":6.18,"asia":4.3125}},
       {"id":"feeForecastMiss","label":"Fee and forecast miss: minus 0.50 point for cash and 1.50 points for equity","fundCagr":{"money":2.97,"tech":7.86,"nasdaq":6.74,"asia":4.25}}
     ],
-    "hardGates":["Rating DD cap","One-point operational DD reserve","60% maximum single-fund weight","All four funds at least 5%"],
+    "hardGates":["Rating DD cap","One-point operational DD reserve","Proportional macro-driven Money Market floor","60% maximum single-fund weight","All four funds at least 5%"],
     "cdar":{"confidence":0.90,"status":"diagnosticPending","useInOptimization":false,"reason":"A synchronized common-date official NAV series for every required sleeve is not yet reproducibly retrievable in the weekend pipeline. CDaR must not become a hard gate until that evidence gap closes."},
-    "modelDisclosure":"Return stresses, the one-point reserve and the 60% concentration ceiling are portfolio-policy assumptions, not external factual claims. They are deliberately explicit and validated every weekend."
+    "modelDisclosure":"Return stresses, the proportional Money Market cushion, the one-point reserve and the 60% concentration ceiling are portfolio-policy assumptions, not external factual claims. They are deliberately explicit and validated every weekend."
   },
   "fundModels": [
     {"id":"money","grossCagr":4.00,"targetLevelCagr":null,"wrapperFee":0.53,"targetFee":0.00,"netCagr":3.47,"forecastUse":"No target fund: use the own-fund 4.00% gross scenario and deduct the complete 0.53% A PHP fee stack.","feeBasis":"A PHP KIID: 0.50% trust + 0.00% custody + 0.02% accounting + 0.01% audit + 0.00% other fees.","sourceIds":["atramMoneyKiid"]},
@@ -74,9 +83,9 @@
     {"region":"Europe","rank":3,"values":[3.01,3.16,3.41],"score":3.14,"driverIds":["europeCycle","financialConditions"],"rationale":"Weak growth and an energy-led inflation shock constrain the near term, with gradual improvement over 12 months."}
   ],
   "scenarios":[
-    {"rate":"3.00-3.99","label":"Robust selective growth","cap":20,"operationalCap":19,"dd":18.52646,"netCagr":7.091,"robustCagr":5.448375,"allocation":[25,15,55,5]},
-    {"rate":"4.00-4.99","label":"Robust bullish growth","cap":25,"operationalCap":24,"dd":23.745205,"netCagr":8.0305,"robustCagr":6.074925,"allocation":[10,35,50,5]},
-    {"rate":"5.00","label":"Robust maximum bullish","cap":30,"operationalCap":29,"dd":27.312675,"netCagr":8.549,"robustCagr":6.437775,"allocation":[5,60,30,5]}
+    {"rate":3.00,"macroCushion":25,"label":"Cushioned selective growth","cap":20,"operationalCap":19,"dd":18.52646,"netCagr":7.091,"robustCagr":5.448375,"allocation":[25,15,55,5]},
+    {"rate":4.00,"macroCushion":15,"label":"Cushioned bullish growth","cap":25,"operationalCap":24,"dd":23.66734,"netCagr":7.904,"robustCagr":6.006075,"allocation":[15,45,35,5]},
+    {"rate":5.00,"macroCushion":5,"label":"Cushioned maximum bullish","cap":30,"operationalCap":29,"dd":27.312675,"netCagr":8.549,"robustCagr":6.437775,"allocation":[5,60,30,5]}
   ],
   "slides":[
     {"tag":"PHP LIQUIDITY","title":"ATRAM Peso Money Market Fund - A PHP","thesis":"The only required fund without a target vehicle; its own official NAV supplies DD.","facts":[["ATRAM own fees","0.53%","Complete A PHP fee stack"],["Target own fees","None","No target fund"],["Net 10Y CAGR","3.47%","Base fully net"],["Robust floor","2.97%","Worst documented stress"],["Max DD","0.19%","Own-fund official NAV"]],"sources":[{"label":"ATRAM A PHP KIID","url":"https://zgwidnilutwbdwvfesar.supabase.co/storage/v1/object/public/program-assets/e17380ee-fc81-4929-9d7c-d148bcca4029/funds/b168a528-3719-4950-a151-d320edcb5fcc/documents/document-1785918375555-jl8qoww.pdf"}]},

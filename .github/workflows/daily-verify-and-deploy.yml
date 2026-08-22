@@ -67,6 +67,8 @@ jobs:
           grep -q '"aggregation":"simpleWeightedSum"' data/portfolio.json
           grep -q '"maximumFundWeight":60' data/portfolio.json
           grep -q '"drawdownReserve":1' data/portfolio.json
+          grep -q '"macroCushion"' data/portfolio.json
+          grep -q 'Proportional macro-driven Money Market floor' data/portfolio.json
           grep -q '"status":"diagnosticPending"' data/portfolio.json
           ! grep -q 'forwardP50' data/portfolio.json
           ! grep -q '"correlations"' data/portfolio.json

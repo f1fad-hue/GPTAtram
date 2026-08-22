@@ -6,15 +6,15 @@
   <meta name="theme-color" content="#f5f7fb">
   <meta name="description" content="A source-traceable four-fund ATRAM portfolio research dashboard.">
   <title>ATRAM Growth Compass</title>
-  <link rel="stylesheet" href="styles.css?v=20260820-robust">
-  <link rel="stylesheet" href="fund-grid.css?v=20260820-robust">
-  <link rel="stylesheet" href="concise.css?v=20260820-robust">
+  <link rel="stylesheet" href="styles.css?v=20260821-cushion">
+  <link rel="stylesheet" href="fund-grid.css?v=20260821-cushion">
+  <link rel="stylesheet" href="concise.css?v=20260821-cushion">
 </head>
 <body>
   <header class="topbar wrap"><a class="brand" href="#overview">ATRAM <b>GROWTH COMPASS</b></a><span class="pill">Light dashboard</span></header>
   <main class="wrap">
     <section class="hero panel">
-      <div><p class="eyebrow">10-YEAR PHP INVESTOR VIEW</p><h1>Robust growth<br><em>inside the DD cap.</em></h1><p class="lede">Four required ATRAM funds. Net return stresses. Target-reference historical max DD.</p><div class="badges"><span>12 distinct drivers</span><span>5% allocation grid</span><span>60% fund ceiling</span><span>1-point DD reserve</span></div></div>
+      <div><p class="eyebrow">10-YEAR PHP INVESTOR VIEW</p><h1>Robust growth<br><em>with a macro cushion.</em></h1><p class="lede">Four required ATRAM funds. Proportional liquidity floor. Historical max-DD control.</p><div class="badges"><span>12 distinct drivers</span><span>Macro cushion</span><span>60% fund ceiling</span><span>1-point DD reserve</span></div></div>
       <div class="score-card"><p>Macro portfolio rate</p><strong id="portfolio-rate">--</strong><span id="rating-label"> / 5</span><div class="meter"><i></i></div><small id="rate-detail">Loading verified model</small></div>
     </section>
 
@@ -28,11 +28,11 @@
 
     <div data-page="overview">
       <section class="metrics"><article class="metric"><span>Required funds</span><strong id="allocation-total">4 / 4</strong><small>All included</small></article><article class="metric"><span>Base 10Y net CAGR</span><strong id="cagr-forecast">--</strong><small>After displayed fees</small></article><article class="metric"><span>Robust CAGR floor</span><strong id="robust-cagr">--</strong><small>Worst documented case</small></article><article class="metric"><span>Historical max DD</span><strong id="drawdown">--</strong><small>Simple weighted sum</small></article></section>
-      <section class="section-heading"><div><p class="eyebrow">OPTIMIZED ANSWER</p><h2>Robust allocation</h2></div><p id="allocation-constraint"></p></section>
+      <section class="section-heading"><div><p class="eyebrow">OPTIMIZED ANSWER</p><h2>Robust, macro-cushioned allocation</h2></div><p id="allocation-constraint"></p></section>
       <section class="allocation-grid"><article class="panel allocation-card"><div class="donut large" id="active-donut"></div><div id="active-allocation" class="allocation-legend"></div></article><article class="panel rationale"><p class="eyebrow">RATIONALE</p><h3>Best worst-case growth with a safety reserve</h3><p id="rationale-copy"></p></article></section>
       <section class="panel robust-method" id="robust-method"></section>
       <section class="panel dd-math" id="dd-math"></section>
-      <section class="section-heading"><div><p class="eyebrow">RATES 3 / 4 / 5</p><h2>Robust maximum-growth scenarios</h2></div><p>Each uses all four funds, the concentration ceiling and a DD reserve.</p></section>
+      <section class="section-heading"><div><p class="eyebrow">RATES 3 / 4 / 5</p><h2>Cushioned maximum-growth scenarios</h2></div><p>Each applies its proportional Money Market floor before maximizing robust CAGR.</p></section>
       <section class="scenario-grid" id="scenario-grid"></section>
     </div>
 
@@ -60,6 +60,6 @@
     </div>
   </main>
   <footer class="wrap"><span>Model snapshot: <b id="as-of"></b></span><span id="monitoring-status">Weekend cloud verification: loading</span></footer>
-  <script src="app.js?v=20260821-weekend"></script>
+  <script src="app.js?v=20260821-cushion"></script>
 </body>
 </html>
